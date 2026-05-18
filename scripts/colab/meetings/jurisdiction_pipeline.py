@@ -32,6 +32,7 @@ from governance_meeting_llm import (
 )
 
 _gatekeeper_log_lock = threading.Lock()
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def gatekeeper_enabled() -> bool:
@@ -39,10 +40,21 @@ def gatekeeper_enabled() -> bool:
 
 
 def gatekeeper_logs_dir(pipe_root: Path) -> Path:
-    """All Gatekeeper console logs and triage JSON reports live under ``00_logs/``."""
-    logs_dir = pipe_root / "00_logs"
-    logs_dir.mkdir(parents=True, exist_ok=True)
-    return logs_dir
+    """Resolve Gatekeeper logs dir; fall back to local repo cache when Drive is read-only."""
+    explicit = (os.environ.get("GOVERNANCE_GATEKEEPER_LOG_DIR") or "").strip()
+    if explicit:
+        logs_dir = Path(explicit).expanduser()
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        return logs_dir
+
+    primary = pipe_root / "00_logs"
+    try:
+        primary.mkdir(parents=True, exist_ok=True)
+        return primary
+    except OSError:
+        fallback = _REPO_ROOT / "data" / "runtime_logs" / "gatekeeper"
+        fallback.mkdir(parents=True, exist_ok=True)
+        return fallback
 
 
 def _log_slug(label: str) -> str:

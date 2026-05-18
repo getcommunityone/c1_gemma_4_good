@@ -2405,11 +2405,11 @@ def _resolve_api_key(cli_value: Optional[str]) -> str:
         val = os.environ.get(env)
         if val:
             return val
-    # Colab Secrets fallback — only when running inside Colab.
     try:
-        from google.colab import userdata  # type: ignore
+        from colab_secrets import get_notebook_secret
+
         for name in ("GEMINI_API_KEY", "GOOGLE_API_KEY"):
-            val = userdata.get(name)
+            val = get_notebook_secret(name)
             if val:
                 return val
     except ImportError:

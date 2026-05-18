@@ -20,12 +20,13 @@ _EPHEMERAL_DATA_DIR = Path("/content/_ephemeral_colab_pipeline_shell")
 
 
 def _in_colab() -> bool:
+    """Colab cloud only — not the local Colab/Jupyter extension."""
     try:
-        import google.colab  # noqa: F401
+        from colab_secrets import in_colab_runtime
 
-        return True
+        return in_colab_runtime()
     except ImportError:
-        return False
+        return bool(os.environ.get("COLAB_RELEASE_TAG")) and Path("/content").is_dir()
 
 
 def _is_repo_root(path: Path) -> bool:
@@ -182,6 +183,12 @@ def complete_section1_bootstrap(
     _ensure_colab_sys_path(repo_path)
     _dotenv = repo_path / ".env"
     if _dotenv.is_file():
+        try:
+            from colab_secrets import load_dotenv_file
+
+            load_dotenv_file(_dotenv, override=False)
+        except ImportError:
+            pass
         try:
             from dotenv import load_dotenv
 

@@ -202,11 +202,16 @@ def resolve_hf_token(cli_value: Optional[str] = None) -> str:
     if val:
         return val
     try:
-        from google.colab import userdata  # type: ignore
+        from colab_secrets import get_notebook_secret
 
-        return (userdata.get("HF_TOKEN") or "").strip()
+        return (get_notebook_secret("HF_TOKEN") or "").strip()
     except ImportError:
-        pass
+        try:
+            from utils.colab_secrets import get_notebook_secret  # type: ignore
+
+            return (get_notebook_secret("HF_TOKEN") or "").strip()
+        except ImportError:
+            pass
     return ""
 
 

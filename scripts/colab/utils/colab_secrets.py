@@ -17,15 +17,53 @@ PathLike = Union[str, Path]
 
 
 def in_colab_runtime() -> bool:
-    """True when executing on Google Colab (not just when ``google.colab`` imports)."""
-    if os.environ.get("COLAB_RELEASE_TAG"):
-        return True
-    try:
-        import google.colab  # noqa: F401
+    """
+    True only on **Google Colab cloud** (``colab.research.google.com``).
 
+    The VS Code / Cursor **Colab extension** installs ``google.colab`` locally but
+    ``userdata.get`` times out — that is **not** Colab cloud. Use ``.env`` locally.
+    """
+    if os.environ.get("GOVERNANCE_FORCE_COLAB_SECRETS", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    ):
         return True
-    except ImportError:
+    return bool(os.environ.get("COLAB_RELEASE_TAG")) and Path("/content").is_dir()
+
+
+def notebook_runs_locally() -> bool:
+    """True for local Jupyter / Cursor / Colab extension (keys from ``.env``)."""
+    return not in_colab_runtime()
+
+
+def default_local_secrets_mode() -> None:
+    """On local runs, skip Colab ``userdata`` unless the user opted into cloud secrets."""
+    if notebook_runs_locally():
+        os.environ.setdefault("GOVERNANCE_NOTEBOOK_SECRETS", "env_only")
+
+
+def load_dotenv_file(dotenv_path: PathLike, *, override: bool = False) -> bool:
+    """Load a ``.env`` file into ``os.environ`` (stdlib only — no ``python-dotenv`` required)."""
+    path = Path(dotenv_path).expanduser()
+    if not path.is_file():
         return False
+    loaded = 0
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        if not key:
+            continue
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        if override or key not in os.environ or not str(os.environ.get(key, "")).strip():
+            os.environ[key] = value
+            loaded += 1
+    return loaded > 0
 
 
 def load_repo_dotenv(repo: Optional[PathLike] = None) -> bool:
@@ -40,7 +78,16 @@ def load_repo_dotenv(repo: Optional[PathLike] = None) -> bool:
         load_dotenv(dotenv_path, override=False)
         return True
     except ImportError:
-        return False
+        return load_dotenv_file(dotenv_path, override=False)
+
+
+def load_dotenv_from_parents(start: Optional[PathLike] = None) -> Optional[Path]:
+    """Walk parents from ``start`` (default ``cwd``) and load the first ``.env`` found."""
+    anchor = Path(start or Path.cwd()).resolve()
+    for folder in (anchor, *anchor.parents):
+        if load_dotenv_file(folder / ".env"):
+            return folder
+    return None
 
 
 def _resolve_repo(repo: Optional[PathLike]) -> Path:
@@ -72,6 +119,7 @@ def get_notebook_secret(name: str, *, repo: Optional[PathLike] = None) -> Option
 
     Never raises on Colab ``TimeoutException`` — falls back to env / ``.env``.
     """
+    default_local_secrets_mode()
     load_repo_dotenv(repo)
     env_val = (os.environ.get(name) or "").strip()
     if env_val:

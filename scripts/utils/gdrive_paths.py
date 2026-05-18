@@ -20,14 +20,61 @@ from __future__ import annotations
 
 import glob
 import os
+import re
 import string
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 _DEFAULT_LOG_GDRIVE_MOUNT = "/mnt/g/My Drive"
 
 # ``scripts/utils/gdrive_paths.py`` → repo root is two parents up from ``scripts/``.
 _REPO_ROOT = Path(__file__).resolve().parents[2]
+
+_DRIVE_FOLDER_ID_RE = re.compile(r"/folders/([A-Za-z0-9_-]+)")
+
+
+def _extract_drive_folder_id(raw: str) -> str:
+    """Extract a Google Drive folder id from either a URL or plain id text."""
+    value = (raw or "").strip()
+    if not value:
+        return ""
+    if "drive.google.com" not in value:
+        return value
+    m = _DRIVE_FOLDER_ID_RE.search(value)
+    if m:
+        return m.group(1)
+    try:
+        parsed = urlparse(value)
+    except ValueError:
+        return ""
+    q = parse_qs(parsed.query or "")
+    for key in ("id", "folder"):
+        vals = q.get(key)
+        if vals and vals[0].strip():
+            return vals[0].strip()
+    return ""
+
+
+def _resolve_drive_folder_id_path(folder_id: str) -> Path | None:
+    """
+    Resolve a Drive folder id to a local mounted path when available.
+
+    On Colab, shared folders/shortcuts are typically exposed via
+    ``/content/drive/.shortcut-targets-by-id/<id>``.
+    """
+    fid = (folder_id or "").strip()
+    if not fid:
+        return None
+    candidates = (
+        Path("/content/drive/.shortcut-targets-by-id") / fid,
+        Path("/content/drive/MyDrive/.shortcut-targets-by-id") / fid,
+        resolved_gdrive_mount_path() / ".shortcut-targets-by-id" / fid,
+    )
+    for cand in candidates:
+        if cand.is_dir():
+            return cand
+    return None
 
 
 def gdrive_mount_path() -> Path:
@@ -179,15 +226,33 @@ def resolve_governance_raw_inputs_root(pipeline_root: Path | None = None) -> Pat
     """
     Folder walked by Gatekeeper / §5 inventory (``AL/county/county_…`` layout).
 
-    1. ``GOVERNANCE_RAW_INPUTS_ROOT`` if set
-    2. ``<pipeline_root>/01_raw_inputs`` when it exists
-    3. ``<repo>/data/cache/scraped_meetings`` only when ``GOVERNANCE_PIPELINE_DATA_ROOT`` is
+    1. ``GOVERNANCE_RAW_INPUTS_ROOT`` if set (path or Google Drive folder URL)
+    2. ``GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL`` / ``..._ID`` via
+       ``.shortcut-targets-by-id/<id>`` when mounted
+    3. ``<pipeline_root>/01_raw_inputs`` when it exists
+    4. ``<repo>/data/cache/scraped_meetings`` only when ``GOVERNANCE_PIPELINE_DATA_ROOT`` is
        **not** set and ``GOVERNANCE_USE_SCRAPED_CACHE_FALLBACK=1`` (opt-in; full cache is huge).
-    4. else ``<pipeline_root>/01_raw_inputs`` (caller may raise if missing)
+    5. else ``<pipeline_root>/01_raw_inputs`` (caller may raise if missing)
     """
     explicit = (os.getenv("GOVERNANCE_RAW_INPUTS_ROOT") or "").strip()
     if explicit:
+        folder_id = _extract_drive_folder_id(explicit)
+        if folder_id and folder_id != explicit:
+            resolved = _resolve_drive_folder_id_path(folder_id)
+            if resolved is not None:
+                return resolved
         return Path(explicit).expanduser()
+
+    folder_hint = (
+        (os.getenv("GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL") or "").strip()
+        or (os.getenv("GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_ID") or "").strip()
+    )
+    if folder_hint:
+        folder_id = _extract_drive_folder_id(folder_hint)
+        if folder_id:
+            resolved = _resolve_drive_folder_id_path(folder_id)
+            if resolved is not None:
+                return resolved
     root = Path(pipeline_root) if pipeline_root else resolve_governance_pipeline_data_root()
     raw = root / "01_raw_inputs"
     if raw.is_dir():

@@ -16,12 +16,13 @@ HACKATHON_PIPELINE_ROOT_REL = Path("CommunityOne") / "hackathons" / "2026_Gemma_
 
 
 def in_colab() -> bool:
+    """True on Colab cloud only — not the local Colab/Jupyter extension."""
     try:
-        import google.colab  # noqa: F401
+        from colab_secrets import in_colab_runtime
 
-        return True
+        return in_colab_runtime()
     except ImportError:
-        return False
+        return bool(os.environ.get("COLAB_RELEASE_TAG")) and Path("/content").is_dir()
 
 
 def repo_root_from_this_file() -> Path:

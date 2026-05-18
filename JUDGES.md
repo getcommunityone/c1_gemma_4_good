@@ -17,6 +17,16 @@ Static React app. Search every U.S. local-government website, browse ACS census 
 3. Pre-staged demo corpus (Tuscaloosa County AL + Big Timber MT) auto-mounts from a public Drive folder.
 4. Outputs land in `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…`.
 
+If your input folder is read-only (shared-link mode), set these before running the pipeline cells:
+
+```python
+import os
+
+os.environ["GOVERNANCE_PIPELINE_DATA_ROOT"] = "/content/governance_pipeline_local"
+os.environ["GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL"] = "https://drive.google.com/drive/folders/1H_narmvkEUEalAyvl1P2oY7XbzaVMD7_?usp=sharing"
+os.environ["GOVERNANCE_GATEKEEPER_LOG_DIR"] = "/content/governance_pipeline_local/00_logs"
+```
+
 Total time: **45–75 minutes** end-to-end on Colab free tier with `SCOPE = "fast"`.
 
 ## What to read while it runs
