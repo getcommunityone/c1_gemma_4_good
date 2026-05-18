@@ -49,7 +49,7 @@ PRESETS: Dict[str, DemoScopePreset] = {
         max_audio_chunks=4,
         parallel_states=1,
         max_images_per_jur=0,
-        preferred_jurisdiction_slug="county_01125",
+        preferred_jurisdiction_slug="county_30097",
         pinned_meeting_date="2026-02-18",
         default_media_scope="all",
     ),

@@ -90,6 +90,66 @@ def slugify_meeting_label(text: str, *, max_len: int = 48) -> str:
     return s[:max_len].strip("-")
 
 
+def extract_meeting_date_range(path: Path) -> tuple[Optional[str], Optional[str]]:
+    """
+    Return ``(start_date, end_date)`` as ``YYYY-MM-DD`` strings for filenames that span
+    multiple days, e.g.::
+
+        2026-05-06_2026-05-07_agenda.pdf  → ("2026-05-06", "2026-05-07")
+        2026-05-06-07_minutes.pdf         → ("2026-05-06", "2026-05-07")
+        2026_05_06_2026_05_07_agenda.pdf  → ("2026-05-06", "2026-05-07")
+
+    Returns ``(start, None)`` for single-day filenames.
+    """
+    stem = path.stem
+
+    # Pattern: full ISO range YYYY-MM-DD_YYYY-MM-DD or YYYY_MM_DD_YYYY_MM_DD
+    m2 = re.search(
+        r"(20\d{2})[-_](\d{2})[-_](\d{2})[-_ ]+(?:through[-_ ]+)?(20\d{2})[-_](\d{2})[-_](\d{2})",
+        stem,
+    )
+    if m2:
+        start = f"{m2.group(1)}-{m2.group(2)}-{m2.group(3)}"
+        end = f"{m2.group(4)}-{m2.group(5)}-{m2.group(6)}"
+        if start != end:
+            return start, end
+        return start, None
+
+    # Pattern: abbreviated end day — 2026-05-06-07 (same month) or 2026_05_06_07
+    m3 = re.search(
+        r"(20\d{2})[-_](\d{2})[-_](\d{2})[-_](\d{2})(?:[^\d]|$)",
+        stem,
+    )
+    if m3:
+        year, month, day_start, day_end = (
+            m3.group(1), m3.group(2), m3.group(3), m3.group(4),
+        )
+        # Only treat as a range if last segment looks like a day (01-31)
+        # and is different from start day and greater (not a 4-digit year)
+        try:
+            d_start, d_end = int(day_start), int(day_end)
+            if 1 <= d_end <= 31 and d_end != d_start:
+                return (
+                    f"{year}-{month}-{day_start}",
+                    f"{year}-{month}-{int(day_end):02d}",
+                )
+        except ValueError:
+            pass
+
+    return infer_meeting_date_from_path(path), None
+
+
+def meeting_start_date(path: Path) -> Optional[str]:
+    """
+    Return the **first** calendar day a meeting document relates to.
+
+    For multi-day meetings (e.g. ``2026-05-06_2026-05-07_minutes.pdf``) this is the
+    *start* date, so the document is grouped with others from that opening day only.
+    """
+    start, _end = extract_meeting_date_range(path)
+    return start
+
+
 def infer_meeting_date_from_path(path: Path) -> Optional[str]:
     """Best-effort ``YYYY-MM-DD`` from filename (``2026-04-06_…``, ``20260406``, etc.)."""
     stem = path.stem
@@ -211,8 +271,10 @@ def meeting_instance_key(
 ) -> Tuple[str, str, str, str]:
     path = Path(rel_path)
     jur = jurisdiction_prefix_from_relative(rel_path)
-    date_s = (meeting_date or "").strip() or infer_meeting_date_from_path(path) or ""
-    date_s = date_s if re.fullmatch(r"\d{4}-\d{2}-\d{2}", date_s) else ""
+    # Always key on the START date so multi-day documents (e.g. 2026-05-06_2026-05-07)
+    # are grouped with documents from the first day only.
+    _raw_date = (meeting_date or "").strip() or meeting_start_date(path) or ""
+    date_s = _raw_date if re.fullmatch(r"\d{4}-\d{2}-\d{2}", _raw_date) else ""
     if not date_s:
         try:
             from meeting_date_scope import normalize_meeting_date, parse_yyyymmdd_from_blob
@@ -489,6 +551,9 @@ def resolve_same_day_meeting_groups(
     if client is None or not model:
         client, model = _optional_identity_client_and_model()
 
+    # Group strictly by (jurisdiction, start_date).  Multi-day meetings already have
+    # their start date in meeting_date (set by meeting_instance_key), so documents
+    # spanning e.g. 2026-05-06 – 2026-05-07 land in the 2026-05-06 bucket only.
     by_day: Dict[Tuple[str, str], List[MeetingInstanceGroup]] = {}
     for g in groups:
         by_day.setdefault((g.jurisdiction_prefix, g.meeting_date), []).append(g)
@@ -582,16 +647,32 @@ def _optional_identity_client_and_model() -> Tuple[Any, Optional[str]]:
         return None, None
 
 
+def _same_day_safe_to_merge(g1: MeetingInstanceGroup, g2: MeetingInstanceGroup) -> bool:
+    """
+    Two groups are safe to merge only when both share the same calendar start date.
+
+    A document that spans multiple days (e.g. ``2026-05-06_2026-05-07_minutes.pdf``)
+    records ``meeting_date`` as the *start* date, so this check uses
+    :attr:`MeetingInstanceGroup.meeting_date` which is already normalised to start-date
+    by :func:`meeting_instance_key`.
+    """
+    return g1.meeting_date == g2.meeting_date
+
+
 def consolidate_same_day_groups(
     groups: List[MeetingInstanceGroup], raw_root: Path
 ) -> List[MeetingInstanceGroup]:
     """
     Merge same-day groups that were split only because filenames lacked a body slug
     (e.g. agenda PDF vs minutes PDF → one ``session`` folder).
+
+    Only files whose :attr:`MeetingInstanceGroup.meeting_date` (the **start** date for
+    multi-day meetings) matches are ever merged.
     """
     del raw_root  # reserved for future manifest-aware merges
     buckets: Dict[Tuple[str, str], List[MeetingInstanceGroup]] = {}
     for g in groups:
+        # Key on (jurisdiction, start_date) — different start dates → different buckets.
         buckets.setdefault((g.jurisdiction_prefix, g.meeting_date), []).append(g)
     out: List[MeetingInstanceGroup] = []
     for _key, items in buckets.items():
@@ -610,6 +691,9 @@ def consolidate_same_day_groups(
         if len(specific) == 1 and generic:
             target = specific[0]
             for g in generic:
+                if not _same_day_safe_to_merge(target, g):
+                    out.append(g)
+                    continue
                 target.files.extend(g.files)
                 target.verdicts.extend(g.verdicts)
             out.append(target)
@@ -617,6 +701,9 @@ def consolidate_same_day_groups(
         if len(items) >= 2 and not specific:
             merged = items[0]
             for g in items[1:]:
+                if not _same_day_safe_to_merge(merged, g):
+                    out.append(g)
+                    continue
                 merged.files.extend(g.files)
                 merged.verdicts.extend(g.verdicts)
             merged.instance_slug = slugify_meeting_label(

@@ -53,7 +53,12 @@ def _flat_recordings_for_meeting(
     meeting_dir: Path,
     jurisdiction_root: Path,
 ) -> List[Path]:
-    """MP4/MP3 at jurisdiction root (pre-organize) matching this meeting's date."""
+    """MP4/MP3 at jurisdiction root (pre-organize) matching this meeting's date.
+
+    Uses the **start date** of each flat file so that multi-day recordings
+    (e.g. ``2026_05_06_2026_05_07_recording.mp4``) are only associated with the
+    meeting on their opening day, not every day that appears in their filename.
+    """
     date_s = _meeting_calendar_date(meeting_dir)
     if not date_s or not jurisdiction_root.is_dir():
         return []
@@ -62,6 +67,18 @@ def _flat_recordings_for_meeting(
     for p in sorted(jurisdiction_root.iterdir()):
         if not p.is_file() or p.suffix.lower() not in _MEDIA_EXTS:
             continue
+        # Prefer strict start-date matching via meeting_grouping when available.
+        try:
+            from meeting_grouping import meeting_start_date as _msd
+
+            file_start = _msd(p)
+            if file_start is not None:
+                if file_start == date_s:
+                    found.append(p)
+                continue
+        except ImportError:
+            pass
+        # Fallback: substring match (single-day files only).
         stem = p.stem
         if underscored in stem or date_s in stem:
             found.append(p)
@@ -77,6 +94,10 @@ def _flat_pdfs_for_meeting(
 
     Colab often leaves Drive flat while ``meetings/2026_05_06/session/`` exists empty;
     the pipeline still writes Gemma outputs keyed by those flat paths.
+
+    Uses the **start date** of each flat file so that multi-day documents
+    (e.g. ``2026_05_06_2026_05_07_minutes.pdf``) are only associated with the
+    meeting on their opening day, not every day that appears in their filename.
     """
     date_s = _meeting_calendar_date(meeting_dir)
     if not date_s or not jurisdiction_root.is_dir():
@@ -87,6 +108,23 @@ def _flat_pdfs_for_meeting(
     for p in sorted(jurisdiction_root.iterdir()):
         if not p.is_file() or p.suffix.lower() != ".pdf":
             continue
+        # Strict start-date match when meeting_grouping is available.
+        try:
+            from meeting_grouping import meeting_start_date as _msd
+
+            file_start = _msd(p)
+            if file_start is not None:
+                if file_start != date_s:
+                    continue  # wrong day — skip
+                stem = p.stem.lower()
+                if "minute" in stem:
+                    minutes.append(p)
+                elif "agenda" in stem:
+                    agenda.append(p)
+                continue
+        except ImportError:
+            pass
+        # Fallback: substring match (single-day files only).
         stem = p.stem.lower()
         if underscored not in stem and date_s not in stem:
             continue
