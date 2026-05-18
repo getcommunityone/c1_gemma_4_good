@@ -123,14 +123,21 @@ def sync_public_folder_to_local(
     _ensure_gdown()
     import gdown
 
+    print("Downloading folder with the following details:")
+    print("  folder_url_or_id:", folder_url_or_id)
+    print("  folder_id:", folder_id)
+
     url = (
         folder_url_or_id
         if "drive.google.com" in folder_url_or_id
         else f"https://drive.google.com/drive/folders/{folder_id}"
     )
+    print("  Resolved URL:", url)  # Log the resolved URL
+
     try:
         gdown.download_folder(url=url, output=str(dest_path), quiet=False, remaining_ok=True)
     except TypeError:
+        print("  Retrying with folder_id:", folder_id)
         gdown.download_folder(id=folder_id, output=str(dest_path), quiet=False, remaining_ok=True)
 
     _sync_stamp(dest_path).write_text(folder_id, encoding="utf-8")
