@@ -299,6 +299,85 @@ def resolve_governance_pipeline_data_root() -> Path:
     return default_hackathon_pipeline_root_in_repo()
 
 
+def raw_inputs_has_jurisdiction_layout(raw: Path) -> bool:
+    """True when ``raw`` has ``AL/county/…`` or ``AL/municipality/…`` jurisdiction dirs."""
+    root = raw.expanduser().resolve()
+    state = root / "AL"
+    if not state.is_dir():
+        return False
+    for scope in ("county", "municipality"):
+        scope_dir = state / scope
+        if scope_dir.is_dir() and any(p.is_dir() for p in scope_dir.iterdir()):
+            return True
+    return False
+
+
+def raw_inputs_has_media_files(raw: Path) -> bool:
+    """True when any PDF or meeting audio/video exists under ``raw``."""
+    root = raw.expanduser().resolve()
+    if not root.is_dir():
+        return False
+    for pat in ("**/*.pdf", "**/*.opus", "**/*.mp4", "**/*.mp3"):
+        if any(root.glob(pat)):
+            return True
+    return False
+
+
+def resolve_effective_raw_inputs_root(raw: Path) -> Path:
+    """
+    Return the directory that actually contains ``AL/<scope>/<jurisdiction>/…``.
+
+    ``gdown`` often nests the hackathon tree (e.g.
+    ``CommunityOne/hackathons/2026_Gemma_4_Good/01_raw_inputs/AL/…``) inside the
+    download target ``01_raw_inputs``. Inventory walks only the effective root.
+    """
+    root = raw.expanduser().resolve()
+    if not root.is_dir():
+        return root
+    if raw_inputs_has_jurisdiction_layout(root):
+        return root
+    for candidate in sorted({root, *root.rglob("01_raw_inputs")}):
+        if candidate.is_dir() and raw_inputs_has_jurisdiction_layout(candidate):
+            return candidate.resolve()
+    for rel in (
+        HACKATHON_PIPELINE_ROOT_REL / "01_raw_inputs",
+        Path("2026_Gemma_4_Good") / "01_raw_inputs",
+    ):
+        candidate = root / rel
+        if candidate.is_dir() and raw_inputs_has_jurisdiction_layout(candidate):
+            return candidate.resolve()
+    return root
+
+
+def diagnose_raw_inputs_layout(raw: Path) -> str:
+    """Human-readable hint when §5 inventory finds zero jurisdictions."""
+    root = raw.expanduser().resolve()
+    lines = [f"Raw inputs layout diagnostic ({root}):"]
+    if not root.is_dir():
+        lines.append("  Directory missing — run §0 → §1 (judge sync).")
+        return "\n".join(lines)
+    top = sorted(p.name for p in root.iterdir() if p.is_dir())[:15]
+    lines.append(f"  Top-level folders: {top or '(none)'}")
+    effective = resolve_effective_raw_inputs_root(root)
+    if effective != root and raw_inputs_has_jurisdiction_layout(effective):
+        lines.append(f"  Corpus is nested — inventory should use: {effective}")
+        lines.append(
+            "  Set os.environ['GOVERNANCE_RAW_INPUTS_ROOT'] to that path, or re-run §1 "
+            "with an updated notebook (auto-fix)."
+        )
+    elif not raw_inputs_has_jurisdiction_layout(root):
+        lines.append(
+            "  Expected layout: …/01_raw_inputs/AL/county/county_01125/… "
+            "(not CommunityOne/… alone at the top level)."
+        )
+        if not raw_inputs_has_media_files(root):
+            lines.append(
+                "  No PDF/audio found anywhere under this tree. "
+                "Try GOVERNANCE_JUDGE_FORCE_SYNC=1 and re-run §1."
+            )
+    return "\n".join(lines)
+
+
 def resolve_governance_raw_inputs_root(pipeline_root: Path | None = None) -> Path:
     """
     Folder walked by Gatekeeper / §5 inventory (``AL/county/county_…`` layout).
@@ -311,14 +390,17 @@ def resolve_governance_raw_inputs_root(pipeline_root: Path | None = None) -> Pat
        **not** set and ``GOVERNANCE_USE_SCRAPED_CACHE_FALLBACK=1`` (opt-in; full cache is huge).
     5. else ``<pipeline_root>/01_raw_inputs`` (caller may raise if missing)
     """
+    def _finalize(path: Path) -> Path:
+        return resolve_effective_raw_inputs_root(path.expanduser())
+
     explicit = (os.getenv("GOVERNANCE_RAW_INPUTS_ROOT") or "").strip()
     if explicit:
         folder_id = _extract_drive_folder_id(explicit)
         if folder_id and folder_id != explicit:
             resolved = _resolve_drive_folder_id_path(folder_id)
             if resolved is not None:
-                return resolved
-        return Path(explicit).expanduser()
+                return _finalize(resolved)
+        return _finalize(Path(explicit))
 
     folder_hint = (
         (os.getenv("GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL") or "").strip()
@@ -329,14 +411,14 @@ def resolve_governance_raw_inputs_root(pipeline_root: Path | None = None) -> Pat
         if folder_id:
             resolved = _resolve_drive_folder_id_path(folder_id)
             if resolved is not None:
-                return resolved
+                return _finalize(resolved)
             resolved = _try_gdrive_api_resolve(folder_id)
             if resolved is not None:
-                return resolved
+                return _finalize(resolved)
     root = Path(pipeline_root) if pipeline_root else resolve_governance_pipeline_data_root()
     raw = root / "01_raw_inputs"
     if raw.is_dir():
-        return raw
+        return _finalize(raw)
     pipeline_explicit = (os.getenv("GOVERNANCE_PIPELINE_DATA_ROOT") or "").strip()
     allow_cache = os.environ.get("GOVERNANCE_USE_SCRAPED_CACHE_FALLBACK", "").strip().lower() in (
         "1",
@@ -346,8 +428,8 @@ def resolve_governance_raw_inputs_root(pipeline_root: Path | None = None) -> Pat
     if not pipeline_explicit and allow_cache:
         cache = default_scraped_meetings_data_cache()
         if cache.is_dir():
-            return cache
-    return raw
+            return _finalize(cache)
+    return _finalize(raw)
 
 
 @dataclass(frozen=True)

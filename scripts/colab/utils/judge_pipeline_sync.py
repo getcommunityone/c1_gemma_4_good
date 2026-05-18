@@ -69,13 +69,15 @@ def _sync_stamp(dest: Path) -> Path:
 def _corpus_looks_ready(dest: Path) -> bool:
     if not dest.is_dir():
         return False
-    stamp = _sync_stamp(dest)
-    if not stamp.is_file():
+    if not _sync_stamp(dest).is_file():
         return False
-    for pat in ("**/*.pdf", "**/*.opus", "**/*.mp4", "**/*.mp3"):
-        if any(dest.glob(pat)):
-            return True
-    return any(p.is_dir() and p.name not in {".", ".."} for p in dest.iterdir())
+    from scripts.utils.gdrive_paths import (
+        raw_inputs_has_media_files,
+        resolve_effective_raw_inputs_root,
+    )
+
+    effective = resolve_effective_raw_inputs_root(dest)
+    return raw_inputs_has_media_files(effective)
 
 
 def _ensure_gdown() -> None:
@@ -223,5 +225,22 @@ def prepare_judge_pipeline(
             "Judge mode needs GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL or §0 SHARED_FOLDER_URL."
         )
     sync_public_folder_to_local(url, raw, force=force_sync)
-    os.environ["GOVERNANCE_RAW_INPUTS_ROOT"] = str(raw.resolve())
-    return root, raw.resolve()
+    from scripts.utils.gdrive_paths import (
+        diagnose_raw_inputs_layout,
+        raw_inputs_has_jurisdiction_layout,
+        raw_inputs_has_media_files,
+        resolve_effective_raw_inputs_root,
+    )
+
+    effective = resolve_effective_raw_inputs_root(raw)
+    if effective != raw.resolve():
+        print(
+            f"Judge corpus: nested Drive layout — inventory root is {effective}\n"
+            f"  (download target was {raw})"
+        )
+    elif not raw_inputs_has_jurisdiction_layout(effective):
+        print(diagnose_raw_inputs_layout(raw))
+    elif not raw_inputs_has_media_files(effective):
+        print(diagnose_raw_inputs_layout(raw))
+    os.environ["GOVERNANCE_RAW_INPUTS_ROOT"] = str(effective)
+    return root, effective
