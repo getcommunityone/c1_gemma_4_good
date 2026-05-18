@@ -38,3 +38,26 @@ def test_setup_notebook_paths_falls_back_to_local_content_when_drive_missing(
     assert paths.project_path == repo
     assert paths.governance_pipeline_data == fallback
     assert fallback.is_dir()
+
+
+def test_setup_notebook_paths_falls_back_when_drive_mounted_but_folder_missing(
+    monkeypatch, tmp_path
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    fallback = tmp_path / "governance_pipeline_local"
+    mount = tmp_path / "content_drive"
+    (mount / "MyDrive").mkdir(parents=True)
+
+    monkeypatch.setattr(colab_paths, "repo_root_from_this_file", lambda: repo)
+    monkeypatch.setattr(colab_paths, "in_colab", lambda: True)
+    monkeypatch.setattr(colab_paths, "_colab_drive_candidates", lambda mount_point="/content/drive": [])
+    monkeypatch.setattr(colab_paths, "_DEFAULT_COLAB_PIPELINE_ROOT", fallback)
+    monkeypatch.delenv("GOVERNANCE_PIPELINE_DATA_ROOT", raising=False)
+
+    paths = colab_paths.setup_notebook_paths(str(mount))
+
+    assert paths.in_colab is True
+    assert paths.project_path == repo
+    assert paths.governance_pipeline_data == fallback
+    assert fallback.is_dir()

@@ -178,7 +178,8 @@ def print_bootstrap_summary(paths: Any) -> None:
             print(f"  Raw inputs: {_raw}")
         else:
             print()
-            print("Personal Drive mode: data under your mounted My Drive, or run §0 for judge mode.")
+            print("Default demo mode: local writable pipeline root (no Drive login).")
+            print("  To use personal Drive, set GOVERNANCE_ENABLE_DRIVE_MOUNT=1 before §1.")
     print("=" * 60)
 
 

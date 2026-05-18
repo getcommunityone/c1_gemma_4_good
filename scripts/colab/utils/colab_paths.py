@@ -70,10 +70,10 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
     - **governance_pipeline_data** — hackathon root with ``01_raw_inputs``, ``02_reference_data``,
       ``03_processed_outputs``:
 
-            - **Colab**: ``GOVERNANCE_PIPELINE_DATA_ROOT`` if set (judge mode or personal), else
-                ``/content/drive/MyDrive/CommunityOne/hackathons/2026_Gemma_4_Good``.
-                When attached to a Colab kernel without a Drive mount (for example via VS Code),
-                fall back to ``/content/governance_pipeline_local``.
+            - **Colab**: ``GOVERNANCE_PIPELINE_DATA_ROOT`` if set, else try
+                ``/content/drive/MyDrive/CommunityOne/hackathons/2026_Gemma_4_Good`` when Drive is
+                already mounted. If Drive is not mounted or the folder is missing, fall back to
+                ``/content/governance_pipeline_local`` (no Drive auth required).
       - **Local**: ``<repo>/data/hackathons/2026_Gemma_4_Good`` unless ``GOVERNANCE_PIPELINE_DATA_ROOT`` is set.
     """
     repo = repo_root_from_this_file()
@@ -87,21 +87,9 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
         for cand in candidates:
             if cand.is_dir():
                 return NotebookLayoutPaths(True, repo, cand)
-        my_drive = Path(mount_point) / "MyDrive"
-        if not my_drive.is_dir():
-            _DEFAULT_COLAB_PIPELINE_ROOT.mkdir(parents=True, exist_ok=True)
-            return NotebookLayoutPaths(True, repo, _DEFAULT_COLAB_PIPELINE_ROOT)
-        probed = "\n".join(f"  · {c}" for c in candidates) or "  (no candidates)"
-        raise RuntimeError(
-            "Could not locate the hackathon pipeline root on Google Drive.\n"
-            f"Expected: .../CommunityOne/hackathons/2026_Gemma_4_Good\n"
-            f"Probed:\n{probed}\n"
-            "Fix one of:\n"
-            "  1. **Judges:** run §0 (shared public folder URL), then §1 — copies corpus to\n"
-            "     /content/governance_pipeline_local (no personal Drive).\n"
-            "  2. **Personal:** mount Drive and confirm that folder exists.\n"
-            "  3. Set os.environ['GOVERNANCE_PIPELINE_DATA_ROOT'] before setup_notebook_paths()."
-        )
+        # Demo-safe default: if Drive is unavailable or folder is missing, use local writable path.
+        _DEFAULT_COLAB_PIPELINE_ROOT.mkdir(parents=True, exist_ok=True)
+        return NotebookLayoutPaths(True, repo, _DEFAULT_COLAB_PIPELINE_ROOT)
     if explicit:
         return NotebookLayoutPaths(False, repo, Path(explicit).expanduser().resolve())
     # Local/WSL: prefer mounted Google Drive (same folder as Colab) when present.
@@ -113,12 +101,23 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
 
 def maybe_mount_google_drive(mount_point: str = "/content/drive") -> None:
     """
-    Call ``drive.mount`` only when running inside Google Colab AND not in read-only shared-folder mode.
+    Call ``drive.mount`` only when explicitly enabled.
 
-    Skip mounting if ``GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL`` / ``GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_ID``
-    is set (judges / public use case reading a shared read-only folder via Drive API).
+    Default is no Drive prompt (demo-safe). Enable only when you want personal Drive mode:
+
+        ``GOVERNANCE_ENABLE_DRIVE_MOUNT=1``
+
+    Skip mounting if read-only shared-folder judge mode is active via
+    ``GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL`` / ``GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_ID``.
     """
     if not in_colab():
+        return
+
+    if os.environ.get("GOVERNANCE_ENABLE_DRIVE_MOUNT", "").strip().lower() not in (
+        "1",
+        "true",
+        "yes",
+    ):
         return
 
     if (os.getenv("GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL") or "").strip() or (
