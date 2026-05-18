@@ -135,10 +135,12 @@ def sync_public_folder_to_local(
     print("  Resolved URL:", url)  # Log the resolved URL
 
     try:
-        gdown.download_folder(url=url, output=str(dest_path), quiet=False, remaining_ok=True)
+        downloaded_files = gdown.download_folder(url=url, output=str(dest_path), quiet=False, remaining_ok=True)
+        print("Downloaded files:", downloaded_files)  # Log all downloaded files
     except TypeError:
         print("  Retrying with folder_id:", folder_id)
-        gdown.download_folder(id=folder_id, output=str(dest_path), quiet=False, remaining_ok=True)
+        downloaded_files = gdown.download_folder(id=folder_id, output=str(dest_path), quiet=False, remaining_ok=True)
+        print("Downloaded files:", downloaded_files)  # Log all downloaded files
 
     _sync_stamp(dest_path).write_text(folder_id, encoding="utf-8")
     print(f"Judge corpus: sync complete ({dest_path})")
