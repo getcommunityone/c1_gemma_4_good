@@ -86,8 +86,16 @@ def load_dotenv_from_parents(start: Optional[PathLike] = None) -> Optional[Path]
     anchor = Path(start or Path.cwd()).resolve()
     for folder in (anchor, *anchor.parents):
         if load_dotenv_file(folder / ".env"):
+            marker = folder / "scripts" / "colab" / "utils" / "colab_paths.py"
+            if marker.is_file():
+                os.environ.setdefault("OPEN_NAVIGATOR_ROOT", str(folder.resolve()))
             return folder
     return None
+
+
+def load_first_project_dotenv() -> Optional[Path]:
+    """Load the nearest ``.env`` and set ``OPEN_NAVIGATOR_ROOT`` when the repo marker exists."""
+    return load_dotenv_from_parents(Path.cwd())
 
 
 def _resolve_repo(repo: Optional[PathLike]) -> Path:

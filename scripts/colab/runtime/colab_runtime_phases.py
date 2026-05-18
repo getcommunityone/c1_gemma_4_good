@@ -323,6 +323,35 @@ def hydrate_pipeline_paths(namespace: Optional[Dict[str, Any]] = None) -> None:
         ns["RAW_ROOT"] = resolve_governance_raw_inputs_root(pipe.root)
 
 
+def _load_dotenv_everywhere(repo: Optional[Path] = None) -> None:
+    """Load ``.env`` from repo, ``OPEN_NAVIGATOR_ROOT``, and parent folders of ``cwd``."""
+    try:
+        from colab_secrets import (
+            default_local_secrets_mode,
+            load_dotenv_from_parents,
+            load_repo_dotenv,
+        )
+    except ImportError:
+        from utils.colab_secrets import (  # type: ignore
+            default_local_secrets_mode,
+            load_dotenv_from_parents,
+            load_repo_dotenv,
+        )
+
+    try:
+        from colab_secrets import load_first_project_dotenv
+    except ImportError:
+        from utils.colab_secrets import load_first_project_dotenv  # type: ignore
+
+    default_local_secrets_mode()
+    load_first_project_dotenv()
+    if repo is not None:
+        load_repo_dotenv(repo)
+    env_root = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
+    if env_root:
+        load_repo_dotenv(env_root)
+
+
 def hydrate_api_and_models(namespace: Optional[Dict[str, Any]] = None) -> bool:
     """
     Restore §4 API keys and model ids from ``.env`` / ``os.environ`` when §4 did not finish.
@@ -334,35 +363,53 @@ def hydrate_api_and_models(namespace: Optional[Dict[str, Any]] = None) -> bool:
     if ns.get("PATHS") is not None:
         repo = Path(ns["PATHS"].project_path).resolve()
         _ensure_repo_on_syspath(repo)
+    elif ns.get("REPO_PATH") is not None:
+        repo = Path(ns["REPO_PATH"]).resolve()
+        _ensure_repo_on_syspath(repo)
 
     try:
-        from colab_secrets import get_notebook_secret, load_repo_dotenv, sanitize_api_key
+        from colab_secrets import get_notebook_secret, sanitize_api_key
     except ImportError:
         from utils.colab_secrets import (  # type: ignore
             get_notebook_secret,
-            load_repo_dotenv,
             sanitize_api_key,
         )
 
-    load_repo_dotenv(repo)
+    _load_dotenv_everywhere(repo)
 
     if not ns.get("API_KEY"):
         gemini = sanitize_api_key(
             get_notebook_secret("GEMINI_API_KEY", repo=repo)
             or get_notebook_secret("GOOGLE_API_KEY", repo=repo)
+            or os.environ.get("GEMINI_API_KEY")
+            or os.environ.get("GOOGLE_API_KEY")
         )
         if gemini:
             ns["API_KEY"] = gemini
+            ns.setdefault("GEMINI_API_KEY", gemini)
             os.environ["GEMINI_API_KEY"] = gemini
 
-    hf = sanitize_api_key(get_notebook_secret("HF_TOKEN", repo=repo))
+    hf = sanitize_api_key(
+        get_notebook_secret("HF_TOKEN", repo=repo) or os.environ.get("HF_TOKEN")
+    )
     if hf:
         ns["HF_TOKEN"] = hf
         os.environ["HF_TOKEN"] = hf
 
+    _apply_section4_defaults(ns)
+
     if not ns.get("API_KEY"):
         return False
 
+    print(
+        "§6 auto-config: restored §4 variables from .env / environment "
+        "(re-run §4 for full model resolution if models look wrong)."
+    )
+    return True
+
+
+def _apply_section4_defaults(ns: Dict[str, Any]) -> None:
+    """Set §4 model/cap globals from env defaults (safe without running §4)."""
     ns.setdefault(
         "GENAI_MODEL",
         os.environ.get("GOVERNANCE_GENAI_MODEL", "gemma-4-26b-a4b-it").strip(),
@@ -379,13 +426,14 @@ def hydrate_api_and_models(namespace: Optional[Dict[str, Any]] = None) -> bool:
         "SHIELD_MODEL",
         (
             os.environ.get("GOVERNANCE_SHIELD_MODEL", "shieldgemma-9b").strip()
-            or ns["GENAI_MODEL"]
+            or ns.get("GENAI_MODEL")
+            or "gemma-4-26b-a4b-it"
         ),
     )
 
-    if "DEMO4_MODEL" not in ns or not str(ns.get("DEMO4_MODEL") or "").strip():
+    if not str(ns.get("DEMO4_MODEL") or "").strip():
         try:
-            from gemma_hf_backend import demo4_use_huggingface, resolve_demo4_hf_model
+            from gemma_hf_backend import cuda_available, demo4_use_huggingface, resolve_demo4_hf_model
 
             if demo4_use_huggingface() and colab_two_phase_enabled() and not cuda_available():
                 ns["DEMO4_MODEL"] = resolve_demo4_hf_model()
@@ -396,7 +444,8 @@ def hydrate_api_and_models(namespace: Optional[Dict[str, Any]] = None) -> bool:
             else:
                 ns["DEMO4_MODEL"] = (
                     os.environ.get("GOVERNANCE_DEMO4_MODEL", "").strip()
-                    or ns["THINKING_MODEL"]
+                    or ns.get("THINKING_MODEL")
+                    or "gemma-4-31b-it"
                 )
         except Exception:
             ns["DEMO4_MODEL"] = (
@@ -424,23 +473,15 @@ def hydrate_api_and_models(namespace: Optional[Dict[str, Any]] = None) -> bool:
         _gate = os.environ.get("GOVERNANCE_GATEKEEPER_MAX_FILES", "").strip()
         ns["GATEKEEPER_MAX_FILES"] = int(_gate) if _gate else None
 
-    print(
-        "§6 auto-config: restored §4 variables from .env / environment "
-        "(re-run §4 for full model resolution if models look wrong)."
-    )
-    return True
-
 
 def require_section6_prereqs(namespace: Optional[Dict[str, Any]] = None) -> None:
     """Raise with a clear message if §1–§5 cells were not run in this session."""
     ns = _notebook_globals(namespace)
     ensure_paths_from_bootstrap(ns)
     hydrate_pipeline_paths(ns)
+    hydrate_api_and_models(ns)
 
     missing = [name for name in SECTION6_REQUIRED_NAMES if name not in ns]
-    if missing and _SECTION4_NAMES.intersection(missing):
-        hydrate_api_and_models(ns)
-        missing = [name for name in SECTION6_REQUIRED_NAMES if name not in ns]
 
     if missing:
         if "INVENTORIES" in missing or _SECTION5_PATH_NAMES.intersection(missing):

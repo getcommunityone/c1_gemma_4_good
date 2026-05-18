@@ -38,15 +38,19 @@ def _ensure_import_paths(repo: Path) -> None:
 
 
 def _repo_from_ns(ns: Dict[str, Any]) -> Optional[Path]:
+    marker = Path("scripts/colab/utils/colab_paths.py")
+    for folder in (Path.cwd(), *Path.cwd().parents):
+        if (folder / marker).is_file():
+            return folder.resolve()
+    env = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
+    if env and (Path(env).expanduser() / marker).is_file():
+        return Path(env).expanduser().resolve()
     if ns.get("PATHS") is not None:
         return Path(ns["PATHS"].project_path).resolve()
     if ns.get("REPO_PATH") is not None:
         return Path(ns["REPO_PATH"]).resolve()
-    env = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
-    if env:
-        return Path(env).expanduser().resolve()
-    for folder in (Path("/content/c1_gemma_4_good"), Path.cwd(), *Path.cwd().parents):
-        if (folder / "scripts/colab/utils/colab_paths.py").is_file():
+    for folder in (Path("/content/c1_gemma_4_good"),):
+        if (folder / marker).is_file():
             return folder.resolve()
     return None
 
@@ -69,7 +73,16 @@ def load_api_keys_into_ns(ns: Dict[str, Any], repo: Optional[Path] = None) -> bo
         )
 
     default_local_secrets_mode()
+    try:
+        from colab_secrets import load_dotenv_from_parents
+    except ImportError:
+        from utils.colab_secrets import load_dotenv_from_parents  # type: ignore
+
+    load_dotenv_from_parents(Path.cwd())
     load_repo_dotenv(repo)
+    env_root = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
+    if env_root:
+        load_repo_dotenv(env_root)
     gemini = sanitize_api_key(
         get_notebook_secret("GEMINI_API_KEY", repo=repo)
         or get_notebook_secret("GOOGLE_API_KEY", repo=repo)
