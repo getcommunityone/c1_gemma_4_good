@@ -4,24 +4,7 @@
 
 ## Decisions Mind Map
 
-```mermaid
-mindmap
-  root((Tuscaloosa County Commission<br/>2026-02-18))
-    Governance & Admin
-      D001: Approve Minutes
-        February 4 meeting
-        Unanimous vote
-    Infrastructure & Capital
-      D002: Courthouse Renovation
-        Harrison Construction
-        $12.58M bid
-        Building project
-    Education & Workforce
-      D003: Basketball Funding
-        Sipsey Valley High School
-        $6,697.35
-        Charter buses
-```
+![Tuscaloosa County Commission decisions mind map](/c1_gemma_4_good/images/meetings/tuscaloosa-decisions-mindmap.png)
 
 ## Theme & Category classification
 
