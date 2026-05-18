@@ -15,8 +15,9 @@ export default function HackathonLayout() {
     <div className="flex min-h-screen flex-col bg-slate-200">
       <header className="border-b border-slate-300 bg-white shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
-          <Link to="/" className="shrink-0 text-lg font-bold text-primary-600">
-            Gemma 4 Good
+          <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-bold text-primary-600">
+            <img src={`${import.meta.env.BASE_URL}communityone_logo.svg`} alt="CommunityOne logo" className="h-8 w-8" />
+            <span>CommunityOne</span>
           </Link>
           <div className="flex-1" />
           <button

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { ArrowRightIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline'
+import { useNavigate } from 'react-router-dom'
 import { dataUrl } from '../lib/dataUrl'
-import { MeetingDetail } from '../components/MeetingDetail'
 
 interface GemmaMeetingRow {
   jurisdiction_label: string
@@ -19,8 +20,12 @@ interface GemmaDemoIndex {
   meetings: GemmaMeetingRow[]
 }
 
+function meetingId(m: GemmaMeetingRow) {
+  return `${m.jurisdiction_root}_${m.meeting_date}`.replace(/\//g, '_')
+}
+
 export default function MeetingsExplorerPage() {
-  const [selectedMeeting, setSelectedMeeting] = useState<GemmaMeetingRow | null>(null)
+  const navigate = useNavigate()
   const [activeCategory, setActiveCategory] = useState<string>('all')
 
   const { data, isLoading, isError } = useQuery({
@@ -58,25 +63,25 @@ export default function MeetingsExplorerPage() {
       : meetings.filter((m) => (m.categories || []).includes(activeCategory))
 
   return (
-    <div className="space-y-6">
-      {/* Meetings List */}
-      <div className="rounded-lg bg-white shadow-sm">
-        <div className="p-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">
+    <div className="min-h-full bg-gradient-to-b from-slate-100 via-slate-100 to-slate-200 p-4 sm:p-6">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-4 rounded-2xl border border-teal-100 bg-white/90 p-5 shadow-sm">
+          <h2 className="text-2xl font-bold text-slate-900">
             Meeting Minutes {meetings.length > 0 && `(${meetings.length})`}
           </h2>
+          <p className="mt-1 text-sm text-slate-600">Browse local meeting outcomes and drill into full summaries.</p>
         </div>
 
-        {isLoading && <p className="p-4 text-slate-500">Loading…</p>}
-        {isError && <p className="p-4 text-red-700">Missing gemma-demo/index.json</p>}
+        {isLoading && <p className="rounded-xl bg-white p-4 text-slate-500 shadow-sm">Loading…</p>}
+        {isError && <p className="rounded-xl bg-white p-4 text-red-700 shadow-sm">Missing gemma-demo/index.json</p>}
 
         {data && meetings.length === 0 && (
-          <p className="p-4 text-slate-500">No meetings found.</p>
+          <p className="rounded-xl bg-white p-4 text-slate-500 shadow-sm">No meetings found.</p>
         )}
 
         {meetings.length > 0 && (
           <>
-            <div className="px-4 pt-3">
+            <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="mr-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Trending Categories
@@ -90,8 +95,8 @@ export default function MeetingsExplorerPage() {
                       onClick={() => setActiveCategory(pill.id)}
                       className={
                         active
-                          ? 'rounded-full bg-teal-600 px-3 py-1 text-xs font-semibold text-white ring-1 ring-teal-600'
-                          : 'rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-200'
+                          ? 'rounded-full bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white ring-1 ring-teal-600'
+                          : 'rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200'
                       }
                     >
                       {pill.label} ({pill.count})
@@ -100,70 +105,62 @@ export default function MeetingsExplorerPage() {
                 })}
               </div>
             </div>
-            <p className="px-4 pt-2 text-xs text-slate-500">Generated {data?.generated_at}</p>
-            <ul className="divide-y divide-slate-200">
+            <p className="px-1 pt-3 text-xs text-slate-500">Generated {data?.generated_at}</p>
+            <ul className="mt-3 space-y-3">
               {visibleMeetings.map((m) => (
-                <li key={`${m.jurisdiction_root}-${m.meeting_date}`} className="p-4 hover:bg-slate-50 transition">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium text-slate-900">{m.jurisdiction_label}</p>
-                      <p className="text-sm text-slate-600">
-                        {m.meeting_date} · {m.jurisdiction_root}
-                      </p>
-                      {m.categories && m.categories.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {m.categories.map((category) => (
-                            <span
-                              key={`${m.jurisdiction_root}-${m.meeting_date}-${category}`}
-                              className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
-                            >
-                              {category}
-                            </span>
-                          ))}
+                <li key={`${m.jurisdiction_root}-${m.meeting_date}`}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/data-explorer/meetings/${meetingId(m)}`)}
+                    className="group w-full rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-teal-700">Meeting</p>
+                        <h3 className="mt-1 text-xl font-semibold text-slate-900 group-hover:text-teal-800">
+                          {m.jurisdiction_label}
+                        </h3>
+                        <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-600">
+                          <span className="inline-flex items-center gap-1.5">
+                            <CalendarIcon className="h-4 w-4" />
+                            {m.meeting_date}
+                          </span>
+                          <span className="inline-flex items-center gap-1.5">
+                            <MapPinIcon className="h-4 w-4" />
+                            {m.jurisdiction_root}
+                          </span>
                         </div>
-                      )}
-                      {m.notes && <p className="mt-1 text-sm text-amber-800">{m.notes}</p>}
+                        {m.categories && m.categories.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {m.categories.map((category) => (
+                              <span
+                                key={`${m.jurisdiction_root}-${m.meeting_date}-${category}`}
+                                className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200"
+                              >
+                                {category}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {m.notes && <p className="mt-2 text-sm text-amber-800">{m.notes}</p>}
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700 ring-1 ring-teal-200">
+                          Drilldown
+                        </span>
+                        <ArrowRightIcon className="h-5 w-5 text-slate-400 transition group-hover:translate-x-1 group-hover:text-teal-600" />
+                      </div>
                     </div>
-                    <div className="ml-4 flex flex-wrap gap-2 justify-end">
-                      {m.summary_path && (
-                        <button
-                          onClick={() => setSelectedMeeting(m)}
-                          className="px-3 py-1 rounded-lg bg-teal-100 text-teal-700 hover:bg-teal-200 text-sm font-medium transition"
-                        >
-                          View Summary
-                        </button>
-                      )}
-                      {m.policy_json_path && (
-                        <a
-                          href={m.policy_json_path}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 text-sm font-medium transition inline-block"
-                        >
-                          Policy JSON
-                        </a>
-                      )}
-                    </div>
-                  </div>
+                  </button>
                 </li>
               ))}
             </ul>
             {visibleMeetings.length === 0 && (
-              <p className="p-4 text-sm text-slate-500">No meetings match this category.</p>
+              <p className="mt-3 rounded-xl bg-white p-4 text-sm text-slate-500 shadow-sm">No meetings match this category.</p>
             )}
           </>
         )}
       </div>
-
-      {/* Meeting Detail Modal */}
-      {selectedMeeting && (
-        <MeetingDetail
-          summaryPath={selectedMeeting.summary_path || ''}
-          jurisdiction={selectedMeeting.jurisdiction_label}
-          meetingDate={selectedMeeting.meeting_date}
-          onBack={() => setSelectedMeeting(null)}
-        />
-      )}
     </div>
   )
 }
