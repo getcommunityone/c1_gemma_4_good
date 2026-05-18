@@ -157,6 +157,8 @@ def apply_preset_to_environ(preset: DemoScopePreset) -> None:
         os.environ.setdefault("GOVERNANCE_DEMO3_OCR_RESOLUTION", "LOW")
         os.environ.setdefault("GOVERNANCE_DEMO3_MAX_DOCUMENT_CHARS", "60000")
         os.environ.setdefault("GOVERNANCE_DEMO3_MIN_DIGITAL_CHARS", "200")
+        # Agendas: skip Demo 3 (minutes + video carry the hackathon story).
+        os.environ.setdefault("GOVERNANCE_DEMO3_AGENDA_MODE", "skip")
         os.environ.setdefault("GOVERNANCE_DEMO1_SKIP_WHEN_DIGITAL", "1")
         os.environ.setdefault("GOVERNANCE_DEMO2_SKIP_WHEN_DIGITAL", "1")
 

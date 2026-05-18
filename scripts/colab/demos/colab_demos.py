@@ -22,6 +22,7 @@ from media_playback_links import (
 from colab_timed_steps import format_elapsed, format_file_size, log_line, log_phase, timed_step
 from genai_quota_retry import (
     call_with_wall_clock_timeout,
+    demo3_agenda_api_timeout_seconds,
     demo3_api_timeout_seconds,
     genai_inter_call_pause,
 )
@@ -161,6 +162,28 @@ DEMO3_SYSTEM = (
     "media_citation timestamps (elapsed from recording start)."
 )
 
+# Agenda PDFs list scheduled items — not adopted minutes. Full policy_analysis_v1.md is overkill.
+DEMO3_AGENDA_LITE_PROMPT = """## Meeting agenda — lightweight extraction
+
+Analyze a **meeting agenda** (scheduled items), not adopted minutes. Do not invent votes, debate, or competing interpretations that are not in the text.
+
+### Output
+Document 1: raw JSON starting with `{` (no markdown fences).
+Optional Document 2 after ---DOCUMENT_BREAK--- : short markdown bullet list of items.
+
+### Required JSON
+- `meeting`: set `input_modality` to `pdf_agenda`; include jurisdiction and meeting date when known.
+- `subjects[]`: one row per distinct agenda item.
+- `decisions[]`: one row per agenda item with `topic`, `headline`, `decision_statement`, `primary_theme`, `primary_theme_cofog` (COFOG-##), `primary_theme_rationale` (one sentence). Use `outcome` `DISCUSSED_ONLY` or `NO_ACTION` and `decision_method` `Discussion Only` unless the agenda states an action was taken.
+- Omit or use empty arrays for: `arguments_for`, `arguments_against`, `underlying_causes`, `alternatives_considered`, `diagram_timeline`, `diagram_mindmap`, `narrative_analysis`, `dissenting_interpretations`.
+- `people` / `organizations`: only if named on the agenda.
+
+Keep the response compact (typical county agenda fits well under 2k output tokens).
+
+### Themes → COFOG (primary_theme_cofog required on every decision)
+Fiscal and Budget Management → COFOG-01; Infrastructure and Capital Projects → COFOG-04; Zoning and Land Use → COFOG-04; Public Safety and Emergency Services → COFOG-03; Environmental and Natural Resources → COFOG-05; Housing and Community Development → COFOG-06; Economic Development and Business → COFOG-04; Transportation and Mobility → COFOG-04; Education and Workforce → COFOG-09; Health and Human Services → COFOG-07; Civil Rights and Equity → COFOG-01; Governance and Administrative Policy → COFOG-01; Parks and Recreation → COFOG-08; Utilities and Public Works → COFOG-04; Technology and Innovation → COFOG-01; Legal and Compliance → COFOG-01; Intergovernmental Relations → COFOG-01; Public Engagement and Communications → COFOG-01.
+"""
+
 _PRIORITY_PATTERNS = (
     "demolition",
     "demolitions",
@@ -185,6 +208,39 @@ DEMO4_SYSTEM = (
 )
 
 
+def demo3_pdf_document_role(pdf: Path) -> str:
+    """``agenda`` | ``minutes`` | ``other`` from filename (gatekeeper uses the same heuristic)."""
+    name = pdf.name.lower()
+    if "agenda" in name:
+        return "agenda"
+    if "minute" in name:
+        return "minutes"
+    return "other"
+
+
+def demo3_agenda_mode() -> str:
+    """
+    How Demo 3 treats agenda PDFs.
+
+    - ``skip`` (default): do not call the model on agenda files (use minutes for policy JSON).
+    - ``lite``: short prompt + lower max output tokens (~1–2 min typical).
+    - ``full``: same 46k-char policy prompt as minutes (slow; can run 7+ min).
+    """
+    raw = os.environ.get("GOVERNANCE_DEMO3_AGENDA_MODE", "skip").strip().lower()
+    if raw in ("skip", "none", "off", "0", "false"):
+        return "skip"
+    if raw in ("full", "complete", "policy", "minutes"):
+        return "full"
+    return "lite"
+
+
+def demo3_agenda_max_output_tokens() -> int:
+    try:
+        return max(512, int(os.environ.get("GOVERNANCE_DEMO3_AGENDA_MAX_OUTPUT_TOKENS", "2048")))
+    except ValueError:
+        return 2048
+
+
 def pick_representative_pdf(pdfs: List[Path]) -> Optional[Path]:
     if not pdfs:
         return None
@@ -205,7 +261,7 @@ def pick_representative_pdf(pdfs: List[Path]) -> Optional[Path]:
 
 
 def pick_demo3_pdfs(pdfs: List[Path], *, max_pdfs: int = 2) -> List[Path]:
-    """Prefer agenda then minutes (legacy: jurisdiction-wide cap only)."""
+    """Prefer minutes then agenda (full policy work runs on minutes first)."""
     import os
 
     cap = max(1, int(os.environ.get("GOVERNANCE_DEMO3_MAX_PDFS", str(max_pdfs))))
@@ -215,7 +271,7 @@ def pick_demo3_pdfs(pdfs: List[Path], *, max_pdfs: int = 2) -> List[Path]:
     minutes = [p for p in pdfs if "minute" in p.name.lower() and p not in agenda]
     rest = [p for p in pdfs if p not in agenda and p not in minutes]
     ordered: List[Path] = []
-    for group in (agenda, minutes, sorted(rest, key=lambda x: x.name)):
+    for group in (minutes, agenda, sorted(rest, key=lambda x: x.name)):
         for p in group:
             if p not in ordered:
                 ordered.append(p)
@@ -745,6 +801,29 @@ def _run_demo3_one_pdf(
             }
         )
         return
+    doc_role = demo3_pdf_document_role(pdf)
+    agenda_mode = demo3_agenda_mode()
+    if doc_role == "agenda" and agenda_mode == "skip":
+        log_line(
+            "skip — agenda not analyzed (GOVERNANCE_DEMO3_AGENDA_MODE=skip; use minutes for policy JSON)",
+            prefix="    ",
+        )
+        report.append(
+            {
+                "jurisdiction": j.relative_label,
+                "pdf": str(pdf.relative_to(ctx.raw_root)),
+                "json_ok": False,
+                "skipped": True,
+                "reason": "agenda_skip",
+            }
+        )
+        return
+    use_agenda_lite = doc_role == "agenda" and agenda_mode == "lite"
+    policy_prompt = DEMO3_AGENDA_LITE_PROMPT if use_agenda_lite else ctx.policy_prompt
+    max_output_tokens = (
+        demo3_agenda_max_output_tokens() if use_agenda_lite else 8192
+    )
+    input_modality = "pdf_agenda" if doc_role == "agenda" else "pdf_minutes"
     geo_hint = (
         f"Geography hint from folder layout: state_code={j.state_code}, "
         f"scope={j.scope}, fips_or_place_id={j.fips or 'unknown'}. "
@@ -754,12 +833,16 @@ def _run_demo3_one_pdf(
     media_hint = format_media_context_hint(
         primary=all_media[0] if all_media else None,
         all_sources=all_media,
-        input_modality="pdf_minutes",
+        input_modality=input_modality,
         local_file=pdf,
     )
     use_text_input = demo3_text_first_enabled()
     doc_source = ""
     timeout_s = demo3_api_timeout_seconds()
+    if use_agenda_lite:
+        agenda_cap = demo3_agenda_api_timeout_seconds()
+        if agenda_cap > 0:
+            timeout_s = agenda_cap if timeout_s <= 0 else min(timeout_s, agenda_cap)
     timeout_note = f", timeout {timeout_s // 60}m" if timeout_s else ""
     demo3_media: List[Tuple[Any, str]] = []
     media_res: Optional[str] = None
@@ -772,24 +855,41 @@ def _run_demo3_one_pdf(
         except Exception as e:
             log_line(f"! {e}", prefix="    ")
             return
+        if use_agenda_lite:
+            apply_line = (
+                "Extract agenda items using the lightweight agenda instructions above. "
+                "Do not apply full minutes deconstruction."
+            )
+        else:
+            apply_line = (
+                "Apply the full deconstruction prompt to the meeting document above. "
+                "Stick to what is actually in the text. Tables may be imperfect — "
+                "do not invent content."
+            )
         user_text = (
-            f"{media_hint}\n{ctx.policy_prompt}\n\n---\n{geo_hint}\n\n"
+            f"{media_hint}\n{policy_prompt}\n\n---\n{geo_hint}\n\n"
             "## Meeting document (plain text)\n\n"
             f"{doc_body}\n\n---\n\n"
-            "Apply the full deconstruction prompt to the meeting document above. "
-            "Stick to what is actually in the text. Tables may be imperfect — "
-            "do not invent content."
+            f"{apply_line}"
         )
         if ctx.thinking_budget is not None and ctx.thinking_budget > 0:
             thinking_budget = ctx.thinking_budget
             include_thoughts = True
-        log_line(
-            f"Calling {thinking_model} — text-only policy ({doc_source}{timeout_note})",
-            prefix="    ",
-        )
+        if use_agenda_lite:
+            log_line(
+                f"Calling {thinking_model} — agenda lite, text-only "
+                f"({doc_source}, prompt ~{len(user_text):,} chars, "
+                f"max {max_output_tokens} out tok{timeout_note})",
+                prefix="    ",
+            )
+        else:
+            log_line(
+                f"Calling {thinking_model} — text-only policy ({doc_source}{timeout_note})",
+                prefix="    ",
+            )
     else:
         user_text = (
-            f"{media_hint}\n{ctx.policy_prompt}\n\n---\n{geo_hint}\n\n"
+            f"{media_hint}\n{policy_prompt}\n\n---\n{geo_hint}\n\n"
             "The attached PDF contains the meeting record. Apply the full deconstruction "
             "prompt to it. Stick to what is actually in the document."
         )
@@ -818,7 +918,7 @@ def _run_demo3_one_pdf(
             user_text=user_text,
             media=demo3_media,
             temperature=0.1,
-            max_output_tokens=8192,
+            max_output_tokens=max_output_tokens,
             media_resolution=media_res,
             include_thoughts=include_thoughts,
             thinking_budget=thinking_budget,

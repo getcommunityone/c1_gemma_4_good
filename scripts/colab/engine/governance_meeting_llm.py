@@ -1538,6 +1538,20 @@ class GenAIResult:
     raw_response: Any                          # full SDK response, for debugging
 
 
+def _attach_genai_afc_disabled(config_kwargs: Dict[str, Any]) -> None:
+    """Disable SDK automatic function calling when we pass no tools (faster, predictable)."""
+    if config_kwargs.get("tools"):
+        return
+    try:
+        from google.genai import types
+
+        afc_cls = getattr(types, "AutomaticFunctionCallingConfig", None)
+        if afc_cls is not None:
+            config_kwargs["automatic_function_calling"] = afc_cls(disable=True)
+    except (ImportError, TypeError, ValueError):
+        pass
+
+
 def _media_resolution_value(budget: Optional[str]):
     """Map our budget tier to the SDK enum; tolerate older SDKs that lack it."""
     if not budget:
@@ -1641,6 +1655,7 @@ def call_google_genai_multimodal(
         temperature=temperature,
         max_output_tokens=max_output_tokens,
     )
+    _attach_genai_afc_disabled(config_kwargs)
 
     mr = _media_resolution_value(media_resolution)
     if mr is not None:

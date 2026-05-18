@@ -84,6 +84,15 @@ def demo3_api_timeout_seconds() -> int:
         return 900
 
 
+def demo3_agenda_api_timeout_seconds() -> int:
+    """Wall-clock cap per agenda PDF in Demo 3 lite mode. 0 = use full demo3 timeout only."""
+    raw = os.environ.get("GOVERNANCE_DEMO3_AGENDA_API_TIMEOUT_SECONDS", "180").strip()
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        return 180
+
+
 def call_with_wall_clock_timeout(
     fn: Callable[[], T],
     *,
