@@ -13,6 +13,7 @@ from pathlib import Path
 
 # Single hackathon pipeline root (must match ``scripts/utils/gdrive_paths.py``).
 HACKATHON_PIPELINE_ROOT_REL = Path("CommunityOne") / "hackathons" / "2026_Gemma_4_Good"
+_DEFAULT_COLAB_PIPELINE_ROOT = Path("/content/governance_pipeline_local")
 
 
 def in_colab() -> bool:
@@ -69,8 +70,10 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
     - **governance_pipeline_data** — hackathon root with ``01_raw_inputs``, ``02_reference_data``,
       ``03_processed_outputs``:
 
-      - **Colab**: ``GOVERNANCE_PIPELINE_DATA_ROOT`` if set (judge mode or personal), else
-        ``/content/drive/MyDrive/CommunityOne/hackathons/2026_Gemma_4_Good``.
+            - **Colab**: ``GOVERNANCE_PIPELINE_DATA_ROOT`` if set (judge mode or personal), else
+                ``/content/drive/MyDrive/CommunityOne/hackathons/2026_Gemma_4_Good``.
+                When attached to a Colab kernel without a Drive mount (for example via VS Code),
+                fall back to ``/content/governance_pipeline_local``.
       - **Local**: ``<repo>/data/hackathons/2026_Gemma_4_Good`` unless ``GOVERNANCE_PIPELINE_DATA_ROOT`` is set.
     """
     repo = repo_root_from_this_file()
@@ -84,6 +87,10 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
         for cand in candidates:
             if cand.is_dir():
                 return NotebookLayoutPaths(True, repo, cand)
+        my_drive = Path(mount_point) / "MyDrive"
+        if not my_drive.is_dir():
+            _DEFAULT_COLAB_PIPELINE_ROOT.mkdir(parents=True, exist_ok=True)
+            return NotebookLayoutPaths(True, repo, _DEFAULT_COLAB_PIPELINE_ROOT)
         probed = "\n".join(f"  · {c}" for c in candidates) or "  (no candidates)"
         raise RuntimeError(
             "Could not locate the hackathon pipeline root on Google Drive.\n"
