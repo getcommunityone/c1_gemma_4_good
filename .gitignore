@@ -1,0 +1,13 @@
+.env
+.venv/
+.venv-dbt/
+web/node_modules/
+web/dist/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+data/
+*.log
+.DS_Store
+_hf_hub_cache/
+content/
