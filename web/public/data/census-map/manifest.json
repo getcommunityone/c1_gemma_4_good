@@ -1,0 +1,1631 @@
+{
+  "vintage": "2024",
+  "vintages": [
+    "2009",
+    "2010",
+    "2011",
+    "2012",
+    "2013",
+    "2014",
+    "2015",
+    "2016",
+    "2017",
+    "2018",
+    "2019",
+    "2020",
+    "2021",
+    "2022",
+    "2023",
+    "2024"
+  ],
+  "tiger_year": "2024",
+  "county_topo_cdn": "https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json",
+  "state_topo_cdn": "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json",
+  "metrics": [
+    {
+      "slug": "median_household_income",
+      "label": "Median household income",
+      "table": "B19013",
+      "estimate_col": "B19013_001E",
+      "format": "currency"
+    },
+    {
+      "slug": "median_home_value",
+      "label": "Median home value",
+      "table": "B25077",
+      "estimate_col": "B25077_001E",
+      "format": "currency"
+    },
+    {
+      "slug": "median_gross_rent",
+      "label": "Median gross rent",
+      "table": "B25064",
+      "estimate_col": "B25064_001E",
+      "format": "currency"
+    },
+    {
+      "slug": "per_capita_income",
+      "label": "Per capita income",
+      "table": "B19301",
+      "estimate_col": "B19301_001E",
+      "format": "currency"
+    },
+    {
+      "slug": "total_population",
+      "label": "Total population",
+      "table": "B01003",
+      "estimate_col": "B01003_001E",
+      "format": "count"
+    },
+    {
+      "slug": "median_age",
+      "label": "Median age (total)",
+      "table": "B01002",
+      "estimate_col": "B01002_001E",
+      "format": "years"
+    },
+    {
+      "slug": "gini_income_inequality",
+      "label": "Gini index of income inequality",
+      "table": "B19083",
+      "estimate_col": "B19083_001E",
+      "format": "ratio"
+    },
+    {
+      "slug": "median_gross_rent_pct_hhincome",
+      "label": "Median gross rent as % of household income",
+      "table": "B25071",
+      "estimate_col": "B25071_001E",
+      "format": "percent"
+    },
+    {
+      "slug": "travel_time_to_work_minutes",
+      "label": "Mean travel time to work (minutes)",
+      "table": "S0801",
+      "estimate_col": "S0801_C01_046E",
+      "format": "minutes"
+    },
+    {
+      "slug": "housing_units",
+      "label": "Housing units",
+      "table": "B25001",
+      "estimate_col": "B25001_001E",
+      "format": "count"
+    },
+    {
+      "slug": "poverty_universe",
+      "label": "Population for poverty status",
+      "table": "B17001",
+      "estimate_col": "B17001_001E",
+      "format": "count"
+    },
+    {
+      "slug": "labor_force",
+      "label": "Civilian labor force",
+      "table": "B23025",
+      "estimate_col": "B23025_003E",
+      "format": "count"
+    },
+    {
+      "slug": "sex_by_age_table_total",
+      "label": "Population (sex by age, table total)",
+      "table": "B01001",
+      "estimate_col": "B01001_001E",
+      "format": "count"
+    },
+    {
+      "slug": "race_table_total",
+      "label": "Population (race, table total)",
+      "table": "B02001",
+      "estimate_col": "B02001_001E",
+      "format": "count"
+    },
+    {
+      "slug": "hispanic_latino_by_race_total",
+      "label": "Population (Hispanic or Latino by race, table total)",
+      "table": "B03002",
+      "estimate_col": "B03002_001E",
+      "format": "count"
+    },
+    {
+      "slug": "population_income_below_poverty_level",
+      "label": "Population with income below poverty level",
+      "table": "B17001",
+      "estimate_col": "B17001_002E",
+      "format": "count"
+    },
+    {
+      "slug": "employed_civilian",
+      "label": "Civilian employed (16+)",
+      "table": "B23025",
+      "estimate_col": "B23025_004E",
+      "format": "count"
+    },
+    {
+      "slug": "unemployed_civilian",
+      "label": "Civilian unemployed (16+)",
+      "table": "B23025",
+      "estimate_col": "B23025_005E",
+      "format": "count"
+    },
+    {
+      "slug": "health_insurance_civilian_noninstitutional_total",
+      "label": "Civilian noninstitutionalized population (health insurance universe)",
+      "table": "B27001",
+      "estimate_col": "B27001_001E",
+      "format": "count"
+    },
+    {
+      "slug": "health_insurance_under19_table_total",
+      "label": "Population (health insurance by age under 19, table total)",
+      "table": "B27010",
+      "estimate_col": "B27010_001E",
+      "format": "count"
+    },
+    {
+      "slug": "population_25_and_over_education_universe",
+      "label": "Population 25 years and over (educational attainment universe)",
+      "table": "B15003",
+      "estimate_col": "B15003_001E",
+      "format": "count"
+    },
+    {
+      "slug": "school_enrollment_total",
+      "label": "Population enrolled in school (enrollment table total)",
+      "table": "B14001",
+      "estimate_col": "B14001_001E",
+      "format": "count"
+    }
+  ],
+  "place_states": [],
+  "paths": {
+    "county_metrics": "/data/census-map/{vintage}/county_metrics.json",
+    "state_metrics": "/data/census-map/{vintage}/state_metrics.json",
+    "place_geojson": "/data/census-map/{vintage}/place_{state}.geojson",
+    "state_trends": "/data/census-map/state_trends.json",
+    "county_trends": "/data/census-map/county_trends_{state}.json",
+    "place_trends": "/data/census-map/place_trends_{state}.json"
+  },
+  "national_ref": {
+    "2009": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 51807.78089112893
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 225748.75615043353
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 824.1491859136762
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 26821.815419368308
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 13125149.779363701
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 36.54811323640492
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.105302137504548
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5327706.407354624
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 12800251.279500779
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 13125149.779363701
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 13125149.779363701
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 13125149.779363701
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1768694.4577238325
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 12569182.631268332
+      }
+    },
+    "2010": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 52360.053781179595
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 225538.0871099262
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 847.7376759394544
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 27126.64799701063
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 13237033.732128475
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 36.89640476732807
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.46184143604944317
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.511415412749763
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 25.294173789627724
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5436090.139155821
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 12918002.54611142
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 13237033.732128475
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 13237033.732128475
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 13237033.732128475
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1832765.0009005822
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 12706773.920587797
+      }
+    },
+    "2011": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 53309.565092173565
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 219157.90687931966
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 878.5910856121599
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 27706.826554916428
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 13368966.676255528
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 37.06010335813253
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.46399127602973206
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.87372899475109
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 25.398188980841848
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5480723.481946832
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 13050667.38599485
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 6713102.966600859
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 13368966.676255528
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 13368966.676255528
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 13368966.676255528
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1922123.8605924996
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6101693.512927437
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 611409.4536734212
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 12839742.826131396
+      }
+    },
+    "2012": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 53546.75259043444
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 210699.33402020647
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 898.7525648123783
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 27846.236344634035
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 13506699.958011521
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 37.223745361587724
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.46568280516383403
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 31.125140527683584
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 25.47969432354888
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5510455.935712557
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 13189458.87554478
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 6784011.536217462
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 13506699.958011521
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 13506699.958011521
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 13506699.958011521
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 2028711.2501535646
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6119323.531306625
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 664688.0049108368
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 13289967.271939918
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": null
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 8863614.645039324
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 12980365.707075752
+      }
+    },
+    "2013": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 53609.389784828076
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 204930.37841433444
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 914.3147544682823
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 27955.287541953297
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 13640893.785255432
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 37.39373135664552
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.46790221195696097
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 31.229175333218524
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 25.559582213426097
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5537305.487422071
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 13322408.717359014
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 6829896.684192443
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 13640893.785255432
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 13640893.785255432
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 13640893.785255432
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 2118539.460063722
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6130381.861765305
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 699514.8224271394
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 13427013.498849535
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 13427013.498849535
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 8984067.529457692
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 13119300.290947966
+      }
+    },
+    "2014": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 54126.092403244955
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 204417.26329789864
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 931.1505714930228
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 28357.46949418087
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 13799575.594481444
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 37.52025933861417
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.47038244862833833
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 31.20850508765886
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 25.755620865328215
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5576384.215704438
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 13479579.615859753
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 6891670.472998681
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 13799575.594481444
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 13799575.594481444
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 13799575.594481444
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 2180749.5459189173
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6222772.444532146
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 668898.0284665349
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 13588160.15100156
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 13588160.15100156
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9127068.0321619
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 13280080.547774782
+      }
+    },
+    "2015": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 54572.24221253564
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 207718.34443162914
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 939.9760627503143
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 28733.508955179845
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 13947105.58641928
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 37.6623963212352
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.4731445743778782
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.975454238412304
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 25.980368732842248
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5613246.774365776
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 13626415.529514493
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 6957349.980521527
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 13947105.58641928
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 13947105.58641928
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 13947105.58641928
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 2186203.9764505
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6348488.170970553
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 608861.8095509748
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 13736953.558647506
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 13736953.558647506
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9265861.815589283
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 13427212.665254183
+      }
+    },
+    "2016": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 56042.90672147595
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 214667.3643529596
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 964.4806043960464
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 29630.344572893406
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14063121.05439346
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 37.807616224603684
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.47473372763275434
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.595766338957528
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.18253286116647
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5651078.955198774
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 13740917.11145991
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7012243.9260822125
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14063121.05439346
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14063121.05439346
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14063121.05439346
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 2149086.006179174
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6465253.142123163
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 546990.7839590489
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 13853513.382676238
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 13853513.382676238
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9382812.704537839
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 13541197.77509138
+      }
+    },
+    "2017": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 58342.85891823418
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 225370.3176701373
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 1001.0263504767742
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 30973.195787022523
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14217613.902971081
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 37.93980092850146
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.47571371241220817
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.347159586624926
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.39549281440261
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5713997.843960051
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 13894200.884473367
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7099516.351487113
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14217613.902971081
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14217613.902971081
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14217613.902971081
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 2089846.3608409003
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6609886.471022842
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 489629.8804642705
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 14008677.155907778
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 14008677.155907778
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9535166.11278776
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 13692965.22519819
+      }
+    },
+    "2018": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 60957.585200272675
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 237697.06209909834
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 1042.9200542207286
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 32411.262103872632
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14315265.779794252
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 38.070995293018065
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.47629739929518117
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.158525100975286
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.653657785271008
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5761441.736024031
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 13992068.787028909
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7158613.096151258
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14315265.779794252
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14315265.779794252
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14315265.779794252
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 2018295.1612421395
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6718866.219004632
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 439746.8771466255
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 14107129.458197445
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 14107129.458197445
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9644223.268832875
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 13789765.231533438
+      }
+    },
+    "2019": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 63635.62037513374
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 250510.13227662063
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 1081.877991892243
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 33888.51420840313
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14406644.628843477
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 38.21889691425707
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.47615543203741717
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 29.88133565623863
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.949984900747697
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5811384.514103756
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 14082060.642688852
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7227553.716363676
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14406644.628843477
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14406644.628843477
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14406644.628843477
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1928567.6852588933
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6824896.807760495
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 402656.9086031813
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 14197452.818298561
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 14197452.818298561
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9751786.110925177
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 13884376.667328358
+      }
+    },
+    "2020": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 65864.82804846935
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 264541.0639119327
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 1118.8087330688597
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 35166.20610177914
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14483825.81815708
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 38.39036762743389
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.4752566257407148
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 29.679195474447894
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.948592754126086
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5853450.393908632
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 14157989.076941844
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7282240.087830572
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14483825.81815708
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14483825.81815708
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14483825.81815708
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1850117.806320574
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6870267.573712004
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 411972.51411856804
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 14272306.56756423
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 14272306.56756423
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9848803.55351516
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 13969072.469378235
+      }
+    },
+    "2021": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 69959.24686930726
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 281377.5576173267
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 1187.990272791362
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 37403.17869574786
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14591120.66078908
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 38.5178040162564
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.4753387490152551
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 29.810858139666898
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.83893586520202
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5919964.847660944
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 14270943.64138775
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7356902.9321305845
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14591120.66078908
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14591120.66078908
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14591120.66078908
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1830470.2788255608
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6927547.864215654
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 429355.0679149303
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 14383902.486174498
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 14383902.486174498
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9934504.713559765
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 14085903.406428747
+      }
+    },
+    "2022": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 76062.42862146937
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 324967.46453744837
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 1298.760182671904
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 41010.68511602455
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14632147.926810507
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 38.681252229958744
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.4763282961548805
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.02967430433908
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.71891224114846
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 5976716.363738383
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 14314827.483941762
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7403994.473650132
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14632147.926810507
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14632147.926810507
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14632147.926810507
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1821693.9745407314
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 6983669.222575254
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 420325.25107487896
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 14425923.87963834
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 14425923.87963834
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 9988324.38749295
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 14141399.549681274
+      }
+    },
+    "2023": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 79503.697293812
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 348840.77689016814
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 1371.9386471748915
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 43031.97381687073
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14673918.997054074
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 38.87407229911415
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.4761924384687067
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.25638162547539
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.640855915041136
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 6039235.251200935
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 14356305.854445523
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7431829.249156935
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14673918.997054074
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14673918.997054074
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14673918.997054074
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1811395.3837805814
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 7017067.083060486
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 414762.16609644925
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 14467279.29146671
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 14467279.29146671
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 10066173.002013946
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 14186313.298082845
+      }
+    },
+    "2024": {
+      "median_household_income": {
+        "us": null,
+        "pop_weighted_states": 81723.41228857648
+      },
+      "median_home_value": {
+        "us": null,
+        "pop_weighted_states": 373680.7213619665
+      },
+      "median_gross_rent": {
+        "us": null,
+        "pop_weighted_states": 1433.944017188026
+      },
+      "per_capita_income": {
+        "us": null,
+        "pop_weighted_states": 44417.681498424834
+      },
+      "total_population": {
+        "us": null,
+        "pop_weighted_states": 14793467.884922719
+      },
+      "median_age": {
+        "us": null,
+        "pop_weighted_states": 39.00237431682878
+      },
+      "gini_income_inequality": {
+        "us": null,
+        "pop_weighted_states": 0.4767162469303294
+      },
+      "median_gross_rent_pct_hhincome": {
+        "us": null,
+        "pop_weighted_states": 30.61831335301698
+      },
+      "travel_time_to_work_minutes": {
+        "us": null,
+        "pop_weighted_states": 26.498352504853308
+      },
+      "housing_units": {
+        "us": null,
+        "pop_weighted_states": 6109194.362113833
+      },
+      "poverty_universe": {
+        "us": null,
+        "pop_weighted_states": 14474868.48576651
+      },
+      "labor_force": {
+        "us": null,
+        "pop_weighted_states": 7510011.255538573
+      },
+      "sex_by_age_table_total": {
+        "us": null,
+        "pop_weighted_states": 14793467.884922719
+      },
+      "race_table_total": {
+        "us": null,
+        "pop_weighted_states": 14793467.884922719
+      },
+      "hispanic_latino_by_race_total": {
+        "us": null,
+        "pop_weighted_states": 14793467.884922719
+      },
+      "population_income_below_poverty_level": {
+        "us": null,
+        "pop_weighted_states": 1830370.0533735196
+      },
+      "employed_civilian": {
+        "us": null,
+        "pop_weighted_states": 7084644.638317416
+      },
+      "unemployed_civilian": {
+        "us": null,
+        "pop_weighted_states": 425366.6172211562
+      },
+      "health_insurance_civilian_noninstitutional_total": {
+        "us": null,
+        "pop_weighted_states": 14587747.151503459
+      },
+      "health_insurance_under19_table_total": {
+        "us": null,
+        "pop_weighted_states": 14587747.151503459
+      },
+      "population_25_and_over_education_universe": {
+        "us": null,
+        "pop_weighted_states": 10177593.474535959
+      },
+      "school_enrollment_total": {
+        "us": null,
+        "pop_weighted_states": 14309324.27254241
+      }
+    }
+  }
+}

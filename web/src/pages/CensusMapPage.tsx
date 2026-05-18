@@ -2588,11 +2588,16 @@ function CensusMapPage() {
       <div className="max-w-3xl mx-auto p-8 text-slate-700">
         <h1 className="text-xl font-semibold text-slate-900">Census map</h1>
         <p className="mt-2">
-          Static data is missing. Run{' '}
-          <code className="rounded bg-slate-100 px-1">
-            .venv/bin/python scripts/datasources/census/export_census_map_static.py
-          </code>{' '}
-          from the repo root after caching ACS parquets.
+          Static data is missing (could not load{' '}
+          <code className="rounded bg-slate-100 px-1">data/census-map/manifest.json</code>). Ensure{' '}
+          <code className="rounded bg-slate-100 px-1">web/public/data/</code> is committed — root{' '}
+          <code className="rounded bg-slate-100 px-1">/data/</code> in .gitignore must not block it.
+        </p>
+        <p className="mt-2 text-sm text-slate-600">
+          Full export from open-navigator:{' '}
+          <code className="rounded bg-slate-100 px-1 text-xs">
+            scripts/datasources/census/export_census_map_static.py
+          </code>
         </p>
       </div>
     )

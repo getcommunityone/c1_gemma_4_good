@@ -6,7 +6,8 @@ web/dist/
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
-data/
+# Repo-root pipeline/cache only (do not ignore web/public/data for GitHub Pages)
+/data/
 *.log
 .DS_Store
 _hf_hub_cache/
