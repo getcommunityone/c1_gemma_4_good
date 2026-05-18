@@ -4,7 +4,7 @@
 
 ## Decisions Mind Map
 
-![Tuscaloosa County Commission decisions mind map](/c1_gemma_4_good/images/meetings/tuscaloosa-decisions-mindmap.png)
+![Tuscaloosa County Commission decisions mind map](/c1_gemma_4_good/images/cover_image.png)
 
 ## Theme & Category classification
 
