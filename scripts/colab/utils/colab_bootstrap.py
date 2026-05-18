@@ -133,9 +133,15 @@ def _clear_stale_imports() -> None:
             sys.modules.pop(name, None)
     for name in ("demo_scope", "pipeline_media_scope", "colab_bootstrap", "colab_paths"):
         sys.modules.pop(name, None)
-    stale = os.environ.pop("GOVERNANCE_PIPELINE_DATA_ROOT", None)
-    if stale:
-        print(f"Cleared stale GOVERNANCE_PIPELINE_DATA_ROOT={stale}")
+    # Do not wipe judge §0 paths — only clear a stale value from a prior personal-Drive run.
+    if not (
+        (os.environ.get("GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL") or "").strip()
+        or (os.environ.get("GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_ID") or "").strip()
+        or os.environ.get("GOVERNANCE_JUDGE_MODE", "").strip().lower() in ("1", "true", "yes")
+    ):
+        stale = os.environ.pop("GOVERNANCE_PIPELINE_DATA_ROOT", None)
+        if stale:
+            print(f"Cleared stale GOVERNANCE_PIPELINE_DATA_ROOT={stale}")
 
 
 def _remove_ephemeral_colab_shell() -> None:
@@ -158,10 +164,21 @@ def print_bootstrap_summary(paths: Any) -> None:
     print(f"Code (repo):     {paths.project_path}")
     print(f"Hackathon data:  {paths.governance_pipeline_data}")
     if paths.in_colab:
-        print()
-        print("Judges: confirm the hackathon path is under your Drive, e.g.")
-        print("  My Drive/CommunityOne/hackathons/2026_Gemma_4_Good")
-        print("not a path that starts with /content/ only.")
+        try:
+            from judge_pipeline_sync import judge_mode_enabled
+        except ImportError:
+            from utils.judge_pipeline_sync import judge_mode_enabled  # type: ignore
+
+        if judge_mode_enabled():
+            print()
+            print("Judge mode: public corpus on local disk (no personal Drive required).")
+            _raw = os.environ.get("GOVERNANCE_RAW_INPUTS_ROOT") or str(
+                paths.governance_pipeline_data / "01_raw_inputs"
+            )
+            print(f"  Raw inputs: {_raw}")
+        else:
+            print()
+            print("Personal Drive mode: data under your mounted My Drive, or run §0 for judge mode.")
     print("=" * 60)
 
 
@@ -201,7 +218,26 @@ def complete_section1_bootstrap(
 
     from scripts.colab.utils.colab_paths import maybe_mount_google_drive, setup_notebook_paths
 
-    maybe_mount_google_drive()
+    _judge_mode = False
+    try:
+        from judge_pipeline_sync import judge_mode_enabled, prepare_judge_pipeline
+    except ImportError:
+        try:
+            from utils.judge_pipeline_sync import (  # type: ignore
+                judge_mode_enabled,
+                prepare_judge_pipeline,
+            )
+        except ImportError:
+            judge_mode_enabled = lambda: False  # type: ignore
+            prepare_judge_pipeline = None  # type: ignore
+
+    _judge_mode = judge_mode_enabled()
+    if _judge_mode and prepare_judge_pipeline is not None:
+        _pipe_root, _raw = prepare_judge_pipeline()
+        print(f"§1 judge sync: pipeline={_pipe_root}  raw_inputs={_raw}")
+    else:
+        maybe_mount_google_drive()
+
     try:
         paths = setup_notebook_paths()
     except RuntimeError as exc:
@@ -234,10 +270,9 @@ def complete_section1_bootstrap(
         print(f"§1: loaded keys from {_env_dir / '.env'}")
     elif in_colab_runtime() and not (os.environ.get("GEMINI_API_KEY") or "").strip():
         print(
-            "§1: no .env on this Colab VM (git clone has no secrets).\n"
-            "      • Colab 🔑 Secrets: GEMINI_API_KEY + HF_TOKEN (notebook access ON), or\n"
-            "      • Copy .env to /content/c1_gemma_4_good/.env , or\n"
-            "      • Put .env in My Drive/.../2026_Gemma_4_Good/ on Drive"
+            "§1: no API keys on this Colab VM yet.\n"
+            "      • Judges: Colab 🔑 Secrets → GEMINI_API_KEY (notebook access ON)\n"
+            "      (Laptop .env is not on Colab; corpus data is separate from API keys.)"
         )
 
     print_bootstrap_summary(paths)

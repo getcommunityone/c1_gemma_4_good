@@ -13,11 +13,12 @@ Static React app. Search every U.S. local-government website, browse ACS census 
 [**▶ Open `run_in_colab.ipynb` in Google Colab**](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb)
 
 1. Add `GEMINI_API_KEY` to **Colab Secrets** (free key from <https://aistudio.google.com>).
-2. **Runtime → Run all.** CPU is fine for Phase 1; switch to L4 GPU for Phase 2 audio.
-3. Pre-staged demo corpus (Tuscaloosa County AL + Big Timber MT) auto-mounts from a public Drive folder.
-4. Outputs land in `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…`.
+2. Run **§0** (judge mode — public folder URL is pre-filled), then **§1 Bootstrap**.
+3. §1 **downloads** the public demo corpus to `/content/governance_pipeline_local` (no personal Google Drive).
+4. Continue **§2 → §6**. CPU for Phase 1; L4 GPU for Phase 2 audio.
+5. Outputs land in `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…` under that local root.
 
-If your input folder is read-only (shared-link mode), set these before running the pipeline cells:
+§0 sets (you do not need to paste this if you ran the §0 cell):
 
 ```python
 import os
@@ -27,7 +28,7 @@ os.environ["GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL"] = "https://drive.google.com
 os.environ["GOVERNANCE_GATEKEEPER_LOG_DIR"] = "/content/governance_pipeline_local/00_logs"
 ```
 
-**No Google Drive for Desktop needed.** The notebook automatically uses the Drive API in Colab (safe, no broad permissions).
+**No Google Drive for Desktop and no Drive mount prompt** — inputs are copied from the public link; outputs stay on the Colab VM disk.
 
 Total time: **45–75 minutes** end-to-end on Colab free tier with `SCOPE = "fast"`.
 

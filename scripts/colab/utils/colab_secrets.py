@@ -38,9 +38,57 @@ def notebook_runs_locally() -> bool:
 
 
 def default_local_secrets_mode() -> None:
-    """On local runs, skip Colab ``userdata`` unless the user opted into cloud secrets."""
+    """Skip Colab ``userdata`` when local, judge mode, or keys already in ``os.environ``."""
     if notebook_runs_locally():
         os.environ.setdefault("GOVERNANCE_NOTEBOOK_SECRETS", "env_only")
+        return
+    if os.environ.get("GOVERNANCE_JUDGE_MODE", "").strip().lower() in ("1", "true", "yes"):
+        os.environ.setdefault("GOVERNANCE_NOTEBOOK_SECRETS", "env_only")
+        return
+    if (os.environ.get("GEMINI_API_KEY") or "").strip():
+        os.environ.setdefault("GOVERNANCE_NOTEBOOK_SECRETS", "env_only")
+
+
+def load_api_keys_to_environ(
+    *,
+    repo: Optional[PathLike] = None,
+    pipeline_root: Optional[PathLike] = None,
+    extra_dotenv_paths: Optional[tuple[PathLike, ...]] = None,
+) -> bool:
+    """
+    Load ``GEMINI_API_KEY`` / ``HF_TOKEN`` from ``.env`` files. Returns True if GEMINI is set.
+
+    Never calls Colab Secrets (use :func:`get_notebook_secret` only when you need Secrets).
+    """
+    default_local_secrets_mode()
+    load_dotenv_all_candidates(repo=repo, pipeline_root=pipeline_root)
+    if extra_dotenv_paths:
+        for p in extra_dotenv_paths:
+            load_dotenv_file(p)
+    explicit = (os.environ.get("GOVERNANCE_DOTENV_PATH") or "").strip()
+    if explicit:
+        load_dotenv_file(explicit)
+    return bool((os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip())
+
+
+def prefer_env_over_colab_secrets() -> None:
+    """Force ``.env`` / paste only — no ``userdata`` (avoids Cursor/Colab extension timeouts)."""
+    os.environ["GOVERNANCE_NOTEBOOK_SECRETS"] = "env_only"
+
+
+def bootstrap_api_keys(
+    *,
+    repo: Optional[PathLike] = None,
+    pipeline_root: Optional[PathLike] = None,
+    extra_dotenv_paths: Optional[tuple[PathLike, ...]] = None,
+) -> bool:
+    """§0 helper: same as :func:`load_api_keys_to_environ` after :func:`prefer_env_over_colab_secrets`."""
+    prefer_env_over_colab_secrets()
+    return load_api_keys_to_environ(
+        repo=repo,
+        pipeline_root=pipeline_root,
+        extra_dotenv_paths=extra_dotenv_paths,
+    )
 
 
 def load_dotenv_file(dotenv_path: PathLike, *, override: bool = False) -> bool:
@@ -145,6 +193,8 @@ def load_dotenv_all_candidates(
 
     if in_colab_runtime():
         for guess in (
+            Path("/content/c1_gemma_4_good"),
+            Path("/content/governance_pipeline_local"),
             Path("/content/drive/MyDrive/CommunityOne/hackathons/2026_Gemma_4_Good"),
             Path("/content/drive/MyDrive/CommunityOne"),
             Path("/content/drive/MyDrive"),

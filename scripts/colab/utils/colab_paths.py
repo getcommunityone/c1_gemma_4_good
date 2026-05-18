@@ -69,7 +69,7 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
     - **governance_pipeline_data** — hackathon root with ``01_raw_inputs``, ``02_reference_data``,
       ``03_processed_outputs``:
 
-      - **Colab**: ``GOVERNANCE_PIPELINE_DATA_ROOT`` if set, else
+      - **Colab**: ``GOVERNANCE_PIPELINE_DATA_ROOT`` if set (judge mode or personal), else
         ``/content/drive/MyDrive/CommunityOne/hackathons/2026_Gemma_4_Good``.
       - **Local**: ``<repo>/data/hackathons/2026_Gemma_4_Good`` unless ``GOVERNANCE_PIPELINE_DATA_ROOT`` is set.
     """
@@ -77,6 +77,8 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
     explicit = (os.getenv("GOVERNANCE_PIPELINE_DATA_ROOT") or "").strip()
     if in_colab():
         if explicit:
+            # Judge mode: use path even if it doesn't exist yet
+            # (will be created by corpus download or §0 setup)
             return NotebookLayoutPaths(True, repo, Path(explicit).expanduser())
         candidates = _colab_drive_candidates(mount_point)
         for cand in candidates:
@@ -88,9 +90,10 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
             f"Expected: .../CommunityOne/hackathons/2026_Gemma_4_Good\n"
             f"Probed:\n{probed}\n"
             "Fix one of:\n"
-            "  1. Mount Drive and confirm that folder exists (run 01_init or copy script 01).\n"
-            "  2. Set os.environ['GOVERNANCE_PIPELINE_DATA_ROOT'] to the absolute hackathon path "
-            "BEFORE calling setup_notebook_paths()."
+            "  1. **Judges:** run §0 (shared public folder URL), then §1 — copies corpus to\n"
+            "     /content/governance_pipeline_local (no personal Drive).\n"
+            "  2. **Personal:** mount Drive and confirm that folder exists.\n"
+            "  3. Set os.environ['GOVERNANCE_PIPELINE_DATA_ROOT'] before setup_notebook_paths()."
         )
     if explicit:
         return NotebookLayoutPaths(False, repo, Path(explicit).expanduser().resolve())
