@@ -74,4 +74,3 @@ mindmap
 - Minutes: `2026_02_18-MINUTES.pdf`
 - Recording: `2026_02_18.mp4`
 
-_Pipeline status, chunk file paths, and troubleshooting: see companion file `_meeting_summary_technical.md` in this folder._
