@@ -220,6 +220,26 @@ def complete_section1_bootstrap(
             else:
                 print(f"  {probe}: (not mounted)")
         raise
+
+    try:
+        from colab_secrets import in_colab_runtime, load_dotenv_all_candidates
+    except ImportError:
+        from utils.colab_secrets import in_colab_runtime, load_dotenv_all_candidates  # type: ignore
+
+    _env_dir = load_dotenv_all_candidates(
+        repo=repo_path,
+        pipeline_root=paths.governance_pipeline_data,
+    )
+    if _env_dir is not None:
+        print(f"§1: loaded keys from {_env_dir / '.env'}")
+    elif in_colab_runtime() and not (os.environ.get("GEMINI_API_KEY") or "").strip():
+        print(
+            "§1: no .env on this Colab VM (git clone has no secrets).\n"
+            "      • Colab 🔑 Secrets: GEMINI_API_KEY + HF_TOKEN (notebook access ON), or\n"
+            "      • Copy .env to /content/c1_gemma_4_good/.env , or\n"
+            "      • Put .env in My Drive/.../2026_Gemma_4_Good/ on Drive"
+        )
+
     print_bootstrap_summary(paths)
     return repo_path, paths
 

@@ -31,6 +31,7 @@ Python helper (not a notebook): [`governance_meeting_llm.py`](governance_meeting
    For read-only judges/public inputs, set this to a writable local path (for example
    `/content/governance_pipeline_local`) and set raw inputs separately via
    `GOVERNANCE_RAW_INPUTS_ROOT` or `GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL`.
+   **Judges in Colab:** No need to install Google Drive for Desktop—the system automatically uses the Drive API.
 4. **WSL + Google Drive Desktop (optional)** — Same relative path appears under your mount, e.g.  
    `/mnt/g/My Drive/CommunityOne/...`  
    Set **`LOG_GDRIVE_MOUNT`** if your mount is not `/mnt/g/My Drive`.
@@ -157,7 +158,7 @@ Scraped meetings mirror is **step 1** above ([`01_copy_scraped_meetings_cache_to
 | `GOVERNANCE_PIPELINE_DATA_ROOT` | Absolute path to pipeline root (Colab: `…/hackathons/2026_Gemma_4_Good`; local default: `data/hackathons/2026_Gemma_4_Good` in the repo). |
 | `GOVERNANCE_PIPELINE_GDRIVE_BASE` | Path under `LOG_GDRIVE_MOUNT` when `DATA_ROOT` is not set (default `CommunityOne/hackathons/2026_Gemma_4_Good`). |
 | `GOVERNANCE_RAW_INPUTS_ROOT` | Override the `01_raw_inputs/` location for the run notebook + Gatekeeper. |
-| `GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL` | Google Drive shared-folder URL for read-only inputs; folder id is resolved via `.shortcut-targets-by-id/<id>` when mounted. |
+| `GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL` | Google Drive shared-folder URL for read-only inputs. In Colab, automatically uses the Drive API (safe, no broad permissions). On local WSL, resolves via `.shortcut-targets-by-id/<id>` mount if available. |
 | `GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_ID` | Same as above, but pass folder id directly instead of URL. |
 | `GOVERNANCE_GATEKEEPER_LOG_DIR` | Writable local folder for gatekeeper logs/reports. Default falls back to `data/runtime_logs/gatekeeper` when Drive logs are not writable. |
 | `GOVERNANCE_LLM_BACKEND` | Default `google` (hybrid). Set `huggingface` to force all calls local. |

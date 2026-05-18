@@ -98,6 +98,62 @@ def load_first_project_dotenv() -> Optional[Path]:
     return load_dotenv_from_parents(Path.cwd())
 
 
+def load_dotenv_all_candidates(
+    *,
+    repo: Optional[PathLike] = None,
+    pipeline_root: Optional[PathLike] = None,
+) -> Optional[Path]:
+    """
+    Load the first ``.env`` found across repo, pipeline data root, Drive, and ``cwd`` parents.
+
+    Returns the directory that contained the loaded file (if any).
+    """
+    default_local_secrets_mode()
+    seen: set[Path] = set()
+    loaded_from: Optional[Path] = None
+
+    def _try(dotenv: Path) -> bool:
+        parent = dotenv.parent.resolve()
+        if parent in seen:
+            return False
+        seen.add(parent)
+        if not load_dotenv_file(dotenv):
+            return False
+        nonlocal loaded_from
+        if loaded_from is None:
+            loaded_from = parent
+        marker = parent / "scripts" / "colab" / "utils" / "colab_paths.py"
+        if marker.is_file():
+            os.environ.setdefault("OPEN_NAVIGATOR_ROOT", str(parent))
+        return True
+
+    for start in (Path.cwd(), *Path.cwd().parents):
+        _try(start / ".env")
+
+    if repo is not None:
+        _try(Path(repo).expanduser() / ".env")
+
+    for raw in (
+        os.environ.get("GOVERNANCE_PIPELINE_DATA_ROOT", "").strip(),
+        str(pipeline_root) if pipeline_root else "",
+    ):
+        if not raw:
+            continue
+        root = Path(raw).expanduser()
+        _try(root / ".env")
+        _try(root.parent / ".env")
+
+    if in_colab_runtime():
+        for guess in (
+            Path("/content/drive/MyDrive/CommunityOne/hackathons/2026_Gemma_4_Good"),
+            Path("/content/drive/MyDrive/CommunityOne"),
+            Path("/content/drive/MyDrive"),
+        ):
+            _try(guess / ".env")
+
+    return loaded_from
+
+
 def _resolve_repo(repo: Optional[PathLike]) -> Path:
     if repo is not None:
         return Path(repo).expanduser().resolve()
@@ -128,7 +184,7 @@ def get_notebook_secret(name: str, *, repo: Optional[PathLike] = None) -> Option
     Never raises on Colab ``TimeoutException`` — falls back to env / ``.env``.
     """
     default_local_secrets_mode()
-    load_repo_dotenv(repo)
+    load_dotenv_all_candidates(repo=repo)
     env_val = (os.environ.get(name) or "").strip()
     if env_val:
         return env_val

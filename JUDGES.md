@@ -27,6 +27,8 @@ os.environ["GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL"] = "https://drive.google.com
 os.environ["GOVERNANCE_GATEKEEPER_LOG_DIR"] = "/content/governance_pipeline_local/00_logs"
 ```
 
+**No Google Drive for Desktop needed.** The notebook automatically uses the Drive API in Colab (safe, no broad permissions).
+
 Total time: **45–75 minutes** end-to-end on Colab free tier with `SCOPE = "fast"`.
 
 ## What to read while it runs

@@ -77,6 +77,83 @@ def _resolve_drive_folder_id_path(folder_id: str) -> Path | None:
     return None
 
 
+def _try_gdrive_api_resolve(folder_id: str) -> Path | None:
+    """
+    Try to resolve a shared Drive folder via the Drive API (safe for public folders).
+
+    In Colab, uses `google.colab.auth` and `googleapiclient` to list and sync files
+    from a shared folder without requiring Google Drive for Desktop or broad permissions.
+
+    Returns a local cache path under ``/tmp`` or Colab ``/content`` if successful,
+    or None if the API is unavailable or the folder is not accessible.
+    """
+    fid = (folder_id or "").strip()
+    if not fid:
+        return None
+
+    try:
+        from google.colab import auth
+        from googleapiclient.discovery import build
+        import shutil
+    except ImportError:
+        return None
+
+    try:
+        auth.authenticate_user()
+        drive_service = build("drive", "v3")
+    except Exception:
+        return None
+
+    cache_root = Path("/tmp/colab_shared_drive_cache") if Path("/tmp").is_dir() else None
+    if cache_root is None:
+        try:
+            cache_root = Path("/content/.shared_drive_cache")
+        except Exception:
+            return None
+
+    cache_dir = cache_root / fid
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        results = drive_service.files().list(
+            q=f"'{fid}' in parents and trashed=false",
+            spaces="drive",
+            fields="files(id, name, mimeType, fileExtension, webViewLink)",
+            pageSize=1000,
+        ).execute()
+
+        files = results.get("files", [])
+        if not files:
+            return None
+
+        for file in files:
+            mime = file.get("mimeType", "")
+            name = file.get("name", "unknown")
+            file_id = file.get("id")
+
+            if (
+                mime == "application/vnd.google-apps.folder"
+                or not name.strip()
+                or file_id is None
+            ):
+                continue
+
+            dest = cache_dir / name
+            if dest.exists():
+                continue
+
+            try:
+                request = drive_service.files().get_media(fileId=file_id)
+                with open(dest, "wb") as f:
+                    f.write(request.execute())
+            except Exception:
+                pass
+
+        return cache_dir if list(cache_dir.glob("*")) else None
+    except Exception:
+        return None
+
+
 def gdrive_mount_path() -> Path:
     """Mounted Google Drive root (default ``/mnt/g/My Drive``)."""
     return Path(os.getenv("LOG_GDRIVE_MOUNT", _DEFAULT_LOG_GDRIVE_MOUNT)).expanduser()
@@ -251,6 +328,9 @@ def resolve_governance_raw_inputs_root(pipeline_root: Path | None = None) -> Pat
         folder_id = _extract_drive_folder_id(folder_hint)
         if folder_id:
             resolved = _resolve_drive_folder_id_path(folder_id)
+            if resolved is not None:
+                return resolved
+            resolved = _try_gdrive_api_resolve(folder_id)
             if resolved is not None:
                 return resolved
     root = Path(pipeline_root) if pipeline_root else resolve_governance_pipeline_data_root()

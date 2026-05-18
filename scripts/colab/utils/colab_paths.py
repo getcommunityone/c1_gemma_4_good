@@ -102,9 +102,20 @@ def setup_notebook_paths(mount_point: str = "/content/drive") -> NotebookLayoutP
 
 
 def maybe_mount_google_drive(mount_point: str = "/content/drive") -> None:
-    """Call ``drive.mount`` only when running inside Google Colab."""
+    """
+    Call ``drive.mount`` only when running inside Google Colab AND not in read-only shared-folder mode.
+
+    Skip mounting if ``GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL`` / ``GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_ID``
+    is set (judges / public use case reading a shared read-only folder via Drive API).
+    """
     if not in_colab():
         return
+
+    if (os.getenv("GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL") or "").strip() or (
+        os.getenv("GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_ID") or ""
+    ).strip():
+        return
+
     from google.colab import drive
 
     drive.mount(mount_point)
