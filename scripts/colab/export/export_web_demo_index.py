@@ -3,7 +3,7 @@
 
 Run from repo root after §6 pipeline outputs exist on Drive or local hackathon root::
 
-  python scripts/export_web_demo_index.py
+  python scripts/colab/export/export_web_demo_index.py
 
 Writes:
   web/public/data/gemma-demo/index.json
@@ -17,7 +17,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-_repo = Path(__file__).resolve().parents[1]
+_repo = Path(__file__).resolve().parents[3]
 if str(_repo) not in sys.path:
     sys.path.insert(0, str(_repo))
 

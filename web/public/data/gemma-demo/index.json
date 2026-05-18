@@ -1,14 +1,4 @@
 {
   "generated_at": "2026-05-18",
-  "meetings": [
-    {
-      "jurisdiction_label": "Tuscaloosa County, AL",
-      "jurisdiction_root": "AL/county/county_01125",
-      "meeting_date": "2026-02-18",
-      "calendar_year": "2026",
-      "summary_path": null,
-      "policy_json_path": null,
-      "notes": "Run §6 in 02_run_meeting_llm.ipynb, then scripts/export_web_demo_index.py to refresh paths."
-    }
-  ]
+  "meetings": []
 }

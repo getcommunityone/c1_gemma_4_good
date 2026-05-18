@@ -14,7 +14,7 @@ This file maps every applicable rule from the *Gemma 4 Good Hackathon* — both 
 | Public Video (≤ 3 min, YouTube, no login required) | Storyboard: [`VIDEO_SCRIPT.md`](VIDEO_SCRIPT.md). YouTube URL added to writeup after recording. | ⏳ to be shot |
 | Public Code Repository (this repo) | GitHub: `getcommunityone/c1_gemma_4_good` (mirrored as the Kaggle Notebook for this submission, which becomes public after the deadline) | ✅ ready |
 | Live Demo (web) | **<https://getcommunityone.github.io/c1_gemma_4_good/>** — static React app, no login, no API key, no paywall. Search + ACS explorer + Gemma meetings. | ✅ ready |
-| Live Demo (pipeline) | [Open in Colab](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb) — runs without login on Colab free tier with a free `GEMINI_API_KEY` | ✅ ready |
+| Live Demo (pipeline) | [Open in Colab](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb) — runs without login on Colab free tier with a free `GEMINI_API_KEY` | ✅ ready |
 | Cover image | `media/cover.png` (attached to writeup Media Gallery) | ⏳ to be added with writeup |
 | Track selected | **Digital Equity & Inclusivity** (Impact Track) — also eligible for Main Track | ✅ declared in [SUBMISSION.md](SUBMISSION.md) and [README.md](README.md) |
 
@@ -50,7 +50,7 @@ This file maps every applicable rule from the *Gemma 4 Good Hackathon* — both 
 - ✅ Solo participant, registered Kaggle account holder, age 18+, resident of an eligible jurisdiction, not on a sanctions list, not an employee/intern/contractor/officer/director of Google, Kaggle, or other Competition Entities.
 
 ### §2.8 — Winner's Obligations
-- **(a) Deliverables:** Final model code = this repo. Training code = N/A (we do not train; we prompt + route Gemma 4 variants). Inference code = `scripts/colab/02_run_meeting_llm.ipynb` + supporting Python in `scripts/colab/`. Computational environment described in [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md). For commercially-available, sponsor-procurable software (Colab, AI Studio, Drive, HuggingFace Hub) we identify it rather than re-deliver code, per §2.8.a.a. ✅
+- **(a) Deliverables:** Final model code = this repo. Training code = N/A (we do not train; we prompt + route Gemma 4 variants). Inference code = `scripts/colab/run_in_colab.ipynb` + supporting Python in `scripts/colab/`. Computational environment described in [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md). For commercially-available, sponsor-procurable software (Colab, AI Studio, Drive, HuggingFace Hub) we identify it rather than re-deliver code, per §2.8.a.a. ✅
 - **(b) AMLT clause:** N/A. ✅
 - **License grant:** ✅ CC-BY-4.0 grant in [LICENSE](LICENSE).
 - **Acceptance documents:** ✅ will sign on notification.

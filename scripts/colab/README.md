@@ -2,7 +2,7 @@
 
 Use this when you **do not** have a high-end local GPU: heavy work runs in Colab or remote APIs; artifacts live on **Google Drive** so WSL and Colab see the same folders after sync.
 
-**Colab vs local (notebooks):** [`colab_paths.py`](colab_paths.py) — `maybe_mount_google_drive()` (no-op locally), `setup_notebook_paths()` (Colab + Drive: `…/CommunityOne/hackathons/2026_Gemma_4_Good`; local: `<repo>/data/hackathons/2026_Gemma_4_Good` unless **`GOVERNANCE_PIPELINE_DATA_ROOT`** is set). Set **`OPEN_NAVIGATOR_ROOT`** if Jupyter’s cwd is not inside the repo.
+**Colab vs local (notebooks):** [`utils/colab_paths.py`](utils/colab_paths.py) — `maybe_mount_google_drive()` (no-op locally), `setup_notebook_paths()` (Colab + Drive: `…/CommunityOne/hackathons/2026_Gemma_4_Good`; local: `<repo>/data/hackathons/2026_Gemma_4_Good` unless **`GOVERNANCE_PIPELINE_DATA_ROOT`** is set). Set **`OPEN_NAVIGATOR_ROOT`** if Jupyter’s cwd is not inside the repo.
 
 Pipeline folder layout under that root: [`scripts/utils/gdrive_paths.py`](../utils/gdrive_paths.py) (`GovernancePipelinePaths`). Drive mount defaults for WSL are documented next to [`scripts/utils/log_sync.py`](../utils/log_sync.py).
 
@@ -13,17 +13,17 @@ Pipeline folder layout under that root: [`scripts/utils/gdrive_paths.py`](../uti
 | 1 | [`01_copy_scraped_meetings_cache_to_gdrive.py`](01_copy_scraped_meetings_cache_to_gdrive.py) | **Sync** | WSL / Linux: by default copies **only** four inventory folders under ``data/cache/scraped_meetings`` (Tuscaloosa county/city + Big Timber county/city) → ``My Drive/CommunityOne/hackathons/2026_Gemma_4_Good/01_raw_inputs``. Use ``--all-cache`` for the full tree. |
 | 2 | [`01_init_drive_layout.ipynb`](01_init_drive_layout.ipynb) | **Init** | Create `01_raw_inputs`, `02_reference_data/orbis_files`, `03_processed_outputs/…` → zone README stubs. **Colab or local** via `colab_paths.py`. |
 | 3 | [`gatekeeper_triage.py`](gatekeeper_triage.py) | **Triage** | Walks `01_raw_inputs/` with `os.walk`, sends each PDF / audio to Gemma 4 for a strict-JSON verdict. Rejects stay in place by default (optional `excluded_inputs/` move). Runs standalone as a CLI or as **Demo step 0** inside the run notebook. |
-| 4 | [`02_run_meeting_llm.ipynb`](02_run_meeting_llm.ipynb) | **Run** | Five labeled Gemma 4 demo cells over every PDF / audio / contact image discovered under `01_raw_inputs`, mirroring outputs to `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…`. **Colab or local**; API key from Colab Secrets or env `GEMINI_API_KEY` / `GOOGLE_API_KEY`. |
+| 4 | [`run_in_colab.ipynb`](run_in_colab.ipynb) | **Run** | Five labeled Gemma 4 demo cells over every PDF / audio / contact image discovered under `01_raw_inputs`, mirroring outputs to `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…`. **Colab or local**; API key from Colab Secrets or env `GEMINI_API_KEY` / `GOOGLE_API_KEY`. This is the judge-facing entrypoint. |
 
-Legacy notebook names (old Colab links): [`02_init_drive_layout.ipynb`](02_init_drive_layout.ipynb) matches step **2** but use **`01_init_…`** for new work; [`03_run_meeting_llm.ipynb`](03_run_meeting_llm.ipynb) matches step **4** but prefer **`02_run_…`** — both are kept in sync by the builder so old Colab bookmarks still work.
+Legacy notebook names (old Colab links): [`02_init_drive_layout.ipynb`](02_init_drive_layout.ipynb) matches step **2** but use **`01_init_…`** for new work. Step **4** was previously named `02_run_meeting_llm.ipynb` (and earlier `03_run_meeting_llm.ipynb`); both have been replaced by `run_in_colab.ipynb`.
 
-Python helper (not a notebook): [`governance_meeting_llm.py`](governance_meeting_llm.py) — tree walker (`walk_raw_inputs`, `mirror_output_path`, `JurisdictionDir.jurisdiction_id`), multimodal Gemma client wrapper (`call_google_genai_multimodal` with `media_resolution` + `thinking_config`), PDF page rendering + token-budget classifier, audio chunking via `ffmpeg`, policy drift detector, Orbis merge by `jurisdiction_id`. Imported by **`02_run_meeting_llm.ipynb`** and (selectively) by `gatekeeper_triage.py`.
+Python helper (not a notebook): [`governance_meeting_llm.py`](governance_meeting_llm.py) — tree walker (`walk_raw_inputs`, `mirror_output_path`, `JurisdictionDir.jurisdiction_id`), multimodal Gemma client wrapper (`call_google_genai_multimodal` with `media_resolution` + `thinking_config`), PDF page rendering + token-budget classifier, audio chunking via `ffmpeg`, policy drift detector, Orbis merge by `jurisdiction_id`. Imported by **`run_in_colab.ipynb`** and (selectively) by `gatekeeper_triage.py`.
 
 ---
 
 ## Prerequisites
 
-1. **Repo for Colab** — Use **GitHub** (Colab “Open from GitHub”) or clone under Drive if you prefer. **Local Jupyter:** open the repo checkout and start the kernel with cwd at the repo root, or set **`OPEN_NAVIGATOR_ROOT`** so the bootstrap cell finds `scripts/colab/colab_paths.py`.
+1. **Repo for Colab** — Use **GitHub** (Colab “Open from GitHub”) or clone under Drive if you prefer. **Local Jupyter:** open the repo checkout and start the kernel with cwd at the repo root, or set **`OPEN_NAVIGATOR_ROOT`** so the bootstrap cell finds `scripts/colab/utils/colab_paths.py`.
 2. **Scraped meetings on Drive (optional)** — Run **01** from WSL to mirror the **default four inventory** folders under ``data/cache/scraped_meetings`` → ``My Drive/CommunityOne/hackathons/2026_Gemma_4_Good/01_raw_inputs`` (use ``--all-cache`` only if you need the entire cache).
 3. **Pipeline root** — Default on Colab and Drive:  
    `My Drive/CommunityOne/hackathons/2026_Gemma_4_Good`  
@@ -101,16 +101,16 @@ The triage layer:
 - **Rejects (default):** failed triage is logged in the JSON report; files stay in `01_raw_inputs/`. Set `GOVERNANCE_GATEKEEPER_MOVE_EXCLUDED=1` to move rejects under `excluded_inputs/` (legacy).
 - **Robust:** every API call, ffmpeg clip, pdf2image render, and `shutil.move` is wrapped in `try/except`; a single bad file never aborts a batch sweep. Each line logs `KEEP | <STATE>/<scope>/<jurisdiction>/... | <file> | type=... conf=...` so the geographic origin is always visible.
 
-The same triage layer is exposed as **Step 0** inside `02_run_meeting_llm.ipynb`; set `GOVERNANCE_GATEKEEPER_ENABLED=0` to skip when running the notebook end-to-end.
+The same triage layer is exposed as **Step 0** inside `run_in_colab.ipynb`; set `GOVERNANCE_GATEKEEPER_ENABLED=0` to skip when running the notebook end-to-end.
 
 With `GOVERNANCE_ORGANIZE_MEETINGS=1` (default), kept/scoped files move under  
 `…/meetings/YYYY_MM_DD/{instance_slug}/` (e.g. `2026_04_01/city-council/`) with  
 `agenda/`, `minutes/`, `collateral/`, and `audio/` subfolders. Demo 4 builds a text brief from agenda+minutes PDFs (names, topics, title) and prepends it to the audio policy prompt.
 
-### 6) Run Gemma / LLM structured analysis — notebook **`02_run_meeting_llm.ipynb`**
+### 6) Run Gemma / LLM structured analysis — notebook **`run_in_colab.ipynb`**
 
-1. Open [`02_run_meeting_llm.ipynb`](02_run_meeting_llm.ipynb) (or the legacy [`03_run_meeting_llm.ipynb`](03_run_meeting_llm.ipynb) alias).
-2. **Bootstrap** — repo discovery (`OPEN_NAVIGATOR_ROOT` or walk parents for `scripts/colab/colab_paths.py`), optional Drive mount in Colab only, `PATHS = setup_notebook_paths()`, then git + `GOVERNANCE_PIPELINE_DATA_ROOT` + imports (same pattern as **`01_init_drive_layout.ipynb`**).
+1. Open [`run_in_colab.ipynb`](run_in_colab.ipynb) (previously named `02_run_meeting_llm.ipynb` / `03_run_meeting_llm.ipynb`).
+2. **Bootstrap** — repo discovery (`OPEN_NAVIGATOR_ROOT` or walk parents for `scripts/colab/utils/colab_paths.py`), optional Drive mount in Colab only, `PATHS = setup_notebook_paths()`, then git + `GOVERNANCE_PIPELINE_DATA_ROOT` + imports (same pattern as **`01_init_drive_layout.ipynb`**).
 3. **`%pip install`** cell — `google-genai`, **`transformers>=5.5.0`** (Gemma 4 / `gemma4` on HF), `accelerate`, `pymupdf`, `pdf2image` (+ `poppler-utils` on Colab). **Restart runtime** after install.
 4. **Secrets / API + caps** — Colab Secret `GEMINI_API_KEY` or env `GEMINI_API_KEY` / `GOOGLE_API_KEY`. Adjust `GOVERNANCE_GENAI_MODEL` if your AI Studio project lists a different Gemma 4 id. Demo caps in env: `GOVERNANCE_DEMO_MAX_PDFS_PER_JUR` (3), `GOVERNANCE_DEMO_MAX_PAGES_PER_PDF` (8), `GOVERNANCE_DEMO_MAX_AUDIO_PER_JUR` (1), `GOVERNANCE_DEMO_MAX_AUDIO_CHUNKS` (4), `GOVERNANCE_DEMO_MAX_IMAGES_PER_JUR` (12), `GOVERNANCE_DEMO_THINKING_BUDGET` (-1).
 5. **Step 0 — Gatekeeper** cell — runs `gatekeeper_triage.run_triage()` on the raw root. Skip with `GOVERNANCE_GATEKEEPER_ENABLED=0`; audit with `GOVERNANCE_GATEKEEPER_DRY_RUN=1`.
@@ -138,9 +138,11 @@ Scraped meetings mirror is **step 1** above ([`01_copy_scraped_meetings_cache_to
 
 | File | Purpose |
 |------|---------|
-| [`governance_meeting_llm.py`](governance_meeting_llm.py) | Tree walker (`walk_raw_inputs`, `JurisdictionDir.jurisdiction_id`, `mirror_output_path`), Gemma client wrapper with `media_resolution` + `thinking_config`, PDF page rendering + per-page token-budget classifier, `ffmpeg` audio chunking, policy drift detector, Orbis merge by `jurisdiction_id`, `---DOCUMENT_BREAK---` parser. Imported by **`02_run_meeting_llm.ipynb`**. |
+| [`governance_meeting_llm.py`](governance_meeting_llm.py) | Tree walker (`walk_raw_inputs`, `JurisdictionDir.jurisdiction_id`, `mirror_output_path`), Gemma client wrapper with `media_resolution` + `thinking_config`, PDF page rendering + per-page token-budget classifier, `ffmpeg` audio chunking, policy drift detector, Orbis merge by `jurisdiction_id`, `---DOCUMENT_BREAK---` parser. Imported by **`run_in_colab.ipynb`**. |
 | [`gatekeeper_triage.py`](gatekeeper_triage.py) | "Ledger of Influence" data gate. `os.walk` over `01_raw_inputs/`, multimodal Gemma triage on every PDF (first 1–2 pages) and audio (first 120 s via `ffmpeg`). Rejects stay in place unless `GOVERNANCE_GATEKEEPER_MOVE_EXCLUDED=1`. Standalone CLI or imported by the run notebook as Step 0. |
-| [`colab_paths.py`](colab_paths.py) | `in_colab`, `maybe_mount_google_drive`, `setup_notebook_paths` for init/run notebooks. |
+| [`utils/colab_paths.py`](utils/colab_paths.py) | `in_colab`, `maybe_mount_google_drive`, `setup_notebook_paths` for init/run notebooks. |
+| [`utils/colab_bootstrap.py`](utils/colab_bootstrap.py) | §1 repo clone, Drive mount, `sys.path` setup for thematic subfolders. |
+| [`utils/mount_drive.sh`](utils/mount_drive.sh) | WSL: mount Windows `G:` → `/mnt/g` for Google Drive. |
 
 ---
 

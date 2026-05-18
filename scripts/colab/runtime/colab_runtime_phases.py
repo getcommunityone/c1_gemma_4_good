@@ -1,7 +1,7 @@
 """
 Colab two-phase runtime helpers: CPU for PDF/API work, GPU for Demo 4 (HF + ffmpeg).
 
-Used by ``02_run_meeting_llm.ipynb`` §6 — not required for local runs.
+Used by ``run_in_colab.ipynb`` §6 — not required for local runs.
 """
 
 from __future__ import annotations

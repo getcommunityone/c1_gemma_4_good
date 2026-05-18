@@ -34,7 +34,7 @@ How an `01_raw_inputs/` folder of municipal records becomes `03_processed_output
                  └── 05_safety_review/<artifact>.shield.json          (final)
 ```
 
-Path resolution lives in `scripts/colab/colab_paths.py` (`maybe_mount_google_drive`, `setup_notebook_paths`) and `scripts/utils/gdrive_paths.py` (`GovernancePipelinePaths`). Folder layout is created idempotently by `01_init_drive_layout.ipynb` or `scripts/utils/ensure_governance_pipeline_drive_layout.py`.
+Path resolution lives in `scripts/colab/utils/colab_paths.py` (`maybe_mount_google_drive`, `setup_notebook_paths`) and `scripts/utils/gdrive_paths.py` (`GovernancePipelinePaths`). Folder layout is created idempotently by `01_init_drive_layout.ipynb` or `scripts/utils/ensure_governance_pipeline_drive_layout.py`.
 
 ---
 
@@ -42,7 +42,7 @@ Path resolution lives in `scripts/colab/colab_paths.py` (`maybe_mount_google_dri
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  02_run_meeting_llm.ipynb                                                    │
+│  run_in_colab.ipynb                                                          │
 │   §1 Bootstrap → §2 SCOPE → §3 install → §4 keys → §5 inventory              │
 │                                                                              │
 │   §6 Phase 1 (CPU) ─── run_governance_pipeline() in colab_runtime_phases.py  │
@@ -121,7 +121,7 @@ Full env-var table: [`scripts/colab/README.md`](scripts/colab/README.md).
 | `GOVERNANCE_DEMO_YEAR_SCOPE`                  | on      | Only the newest `20xx/` folder per jurisdiction                             |
 | `GOVERNANCE_DEMO_MEETING_DATES`               | 3       | Last N meeting dates per jurisdiction                                        |
 
-These are the only hyper-parameters in the pipeline (we do not train). To reproduce the published outputs, run `02_run_meeting_llm.ipynb` with `SCOPE = "fast"` on Colab CPU + L4 GPU two-phase, with the demo corpus pre-staged on the shared Drive folder.
+These are the only hyper-parameters in the pipeline (we do not train). To reproduce the published outputs, run `run_in_colab.ipynb` with `SCOPE = "fast"` on Colab CPU + L4 GPU two-phase, with the demo corpus pre-staged on the shared Drive folder.
 
 ---
 

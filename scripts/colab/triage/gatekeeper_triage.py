@@ -7,7 +7,7 @@ recursively with :func:`os.walk`, sends each PDF / audio file to a Gemma multimo
 triage call, and routes the file based on the model's verdict:
 
 * **PROCEED** (``is_governance_meeting=True`` and confidence ≥ threshold) — leave the
-  file in place so downstream pipelines (notebook ``02_run_meeting_llm.ipynb`` / Gatekeeper
+  file in place so downstream pipelines (notebook ``run_in_colab.ipynb`` / Gatekeeper
   step 2) pick it up.
 * **EXCLUDE** — by default files **stay in place** (logged in the triage report only).
   Set ``GOVERNANCE_GATEKEEPER_MOVE_EXCLUDED=1`` to mirror rejects under

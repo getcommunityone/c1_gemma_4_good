@@ -91,7 +91,7 @@ Detailed map: [ARCHITECTURE.md](ARCHITECTURE.md).
 ## 5. Technical depth — what we built, not what we sketched
 
 - **39 Python modules / 16,000 lines** of production-grade pipeline code. None of it is mocked; the notebook runs end-to-end against a real corpus.
-- **Bootstrap that works on Colab and local Jupyter from the same notebook** — `colab_paths.py` detects the runtime, mounts Drive only on Colab, resolves the repo root by walking parents.
+- **Bootstrap that works on Colab and local Jupyter from the same notebook** — `scripts/colab/utils/colab_paths.py` detects the runtime, mounts Drive only on Colab, resolves the repo root by walking parents.
 - **Hybrid cloud + edge routing** — Gatekeeper defaults to AI Studio's `gemma-3n-e2b-it` (cheap, fast) but falls back to local HF weights when `HF_TOKEN` is set and `GOVERNANCE_GATEKEEPER_FORCE_HF=1`.
 - **Wall-clock timeouts on every API call** — `genai_quota_retry.call_with_wall_clock_timeout`. A single hung socket cannot abort a 200-PDF batch.
 - **Strict idempotency** — `demo2_pdf_outputs_complete`, `demo3_thinking_json_complete`, `demo4_drift_output_complete` skip already-processed files so a re-run after a Colab disconnect resumes mid-pipeline.
@@ -119,7 +119,7 @@ Detailed map: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 - **Public code repo:** the repo containing this writeup (CC-BY-4.0).
 - **Live demo — Web UX (React, static, no API):** **<https://getcommunityone.github.io/c1_gemma_4_good/>** — no login, no paywall. Search + ACS data explorer + Gemma meetings tab. This is the equalizer in a browser.
-- **Live demo — reproducible pipeline:** [Colab link](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb) — runs in 45–75 min with a free `GEMINI_API_KEY`. Proves the technology behind the web UX is real, working, and runs offline.
+- **Live demo — reproducible pipeline:** [Colab link](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb) — runs in 45–75 min with a free `GEMINI_API_KEY`. Proves the technology behind the web UX is real, working, and runs offline.
 - **Video (3 min):** see Media Gallery on the Kaggle writeup; storyboard in [VIDEO_SCRIPT.md](VIDEO_SCRIPT.md).
 - **Rules compliance:** [RULES_CHECKLIST.md](RULES_CHECKLIST.md) maps every General + Competition-Specific rule to a piece of evidence in this repo.
 

@@ -15,7 +15,7 @@
 #
 # This is a smoke-test path that proves the pipeline works end-to-end
 # on one jurisdiction in <5 minutes. For the full multi-jurisdiction
-# run, use scripts/colab/02_run_meeting_llm.ipynb.
+# run, use scripts/colab/run_in_colab.ipynb.
 
 set -euo pipefail
 
@@ -51,7 +51,7 @@ echo "==> Gatekeeper triage (Demo 0) — dry-run audit"
 
 echo
 echo "Quickstart complete. For the full pipeline (Demos 1–6 + ShieldGemma):"
-echo "  jupyter lab scripts/colab/02_run_meeting_llm.ipynb"
+echo "  jupyter lab scripts/colab/run_in_colab.ipynb"
 echo
 echo "Or open the static web UX (no install required):"
 echo "  https://getcommunityone.github.io/c1_gemma_4_good/"

@@ -34,12 +34,12 @@ npm run dev
 Refresh the meeting/search index after a pipeline run:
 
 ```bash
-python scripts/export_web_demo_index.py
+python scripts/colab/export/export_web_demo_index.py
 ```
 
 ## 2) Colab pipeline — *5 minutes to set up, 45 min to run*
 
-> [**▶ Open in Colab**](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb)
+> [**▶ Open in Colab**](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb)
 
 1. Get a free Gemini API key at <https://aistudio.google.com>.
 2. In Colab, **🔑 Secrets → +** → name `GEMINI_API_KEY`, value = your key.

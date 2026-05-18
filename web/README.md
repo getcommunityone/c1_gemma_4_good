@@ -67,6 +67,6 @@ Do **not** mix branch deploy and GitHub Actions unless you pick one source under
 
 - **Census map:** `public/data/census-map/` (~10MB) — must be **in git** (root `.gitignore` uses `/data/` so this folder is not ignored)  
 - **Search:** `public/data/search-index.json`  
-- **Meetings:** `public/data/gemma-demo/index.json` — `python scripts/export_web_demo_index.py` after §6  
+- **Meetings:** `public/data/gemma-demo/index.json` — `python scripts/colab/export/export_web_demo_index.py` after §6  
 
 Based on [open-navigator](https://github.com/getcommunityone/open-navigator) `frontend/`.

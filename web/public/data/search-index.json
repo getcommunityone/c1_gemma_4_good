@@ -4,20 +4,26 @@
     {
       "type": "jurisdiction",
       "title": "Tuscaloosa County, Alabama",
-      "subtitle": "county_01125 · AL",
-      "description": "Hackathon demo jurisdiction — meeting PDFs and video processed with Gemma 4.",
+      "subtitle": "county_01125 \u00b7 AL",
+      "description": "Hackathon demo jurisdiction \u2014 meeting PDFs and video processed with Gemma 4.",
       "url": "/data-explorer/meetings",
       "score": 1,
-      "metadata": { "state": "AL", "slug": "county_01125" }
+      "metadata": {
+        "state": "AL",
+        "slug": "county_01125"
+      }
     },
     {
       "type": "meeting",
-      "title": "Tuscaloosa County — 2026-02-18 session",
+      "title": "Tuscaloosa County \u2014 2026-02-18 session",
       "subtitle": "Regular session",
-      "description": "Agenda PDF + video — policy deconstruction and drift detection demo.",
+      "description": "Agenda PDF + video \u2014 policy deconstruction and drift detection demo.",
       "url": "/data-explorer/meetings",
       "score": 1,
-      "metadata": { "calendar_year": "2026", "meeting_date": "2026-02-18" }
+      "metadata": {
+        "calendar_year": "2026",
+        "meeting_date": "2026-02-18"
+      }
     },
     {
       "type": "topic",
@@ -31,11 +37,14 @@
     {
       "type": "jurisdiction",
       "title": "Sweet Grass County, Montana",
-      "subtitle": "county_30097 · MT",
+      "subtitle": "county_30097 \u00b7 MT",
       "description": "Secondary hackathon inventory (Big Timber area).",
       "url": "/data-explorer/jurisdiction-quality",
       "score": 1,
-      "metadata": { "state": "MT", "slug": "county_30097" }
+      "metadata": {
+        "state": "MT",
+        "slug": "county_30097"
+      }
     }
   ]
 }

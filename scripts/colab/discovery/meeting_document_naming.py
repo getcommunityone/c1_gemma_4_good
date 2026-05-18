@@ -1,8 +1,7 @@
 """
 Human-readable PDF filenames for scraped meetings (date + title, snake_case).
 
-Shared by :mod:`scripts.discovery.comprehensive_discovery_pipeline_jurisdiction` and
-:mod:`scripts.discovery.load_scraped_meetings_manifests_to_bronze` so bronze date/title logic stays
+Shared by Colab meeting pipeline modules and open-navigator discovery loaders so bronze date/title logic stays
 aligned with on-disk names.
 """
 from __future__ import annotations

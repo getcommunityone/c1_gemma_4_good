@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 from typing import Any, Tuple
 
-_REPO_MARKER = Path("scripts") / "colab" / "colab_paths.py"
+_REPO_MARKER = Path("scripts") / "colab" / "utils" / "colab_paths.py"
 _DEFAULT_COLAB_CLONE = Path("/content/c1_gemma_4_good")
 _CLONE_URL = "https://github.com/getcommunityone/c1_gemma_4_good.git"
 _EPHEMERAL_DATA_DIR = Path("/content/_ephemeral_colab_pipeline_shell")
@@ -80,14 +80,25 @@ def discover_repo_root(
         "Could not find the c1_gemma_4_good repository.\n\n"
         "What to do:\n"
         "  • Google Colab: open\n"
-        "      https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb\n"
+        "      https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb\n"
         "    then re-run §1 (it clones to /content/c1_gemma_4_good).\n"
         "  • Cursor / local Jupyter: in the cell below §1, set:\n"
         "      import os\n"
         "      os.environ['OPEN_NAVIGATOR_ROOT'] = '/absolute/path/to/c1_gemma_4_good'\n"
         "    then re-run §1.\n"
-        "  • Do not use a stale copy of 03_run_meeting_llm.ipynb — use 02_run_meeting_llm.ipynb.\n"
+        "  • Do not use stale copies of 02_run_meeting_llm.ipynb / 03_run_meeting_llm.ipynb — use run_in_colab.ipynb.\n"
     )
+
+
+def _ensure_colab_sys_path(root: Path) -> None:
+    colab = root / "scripts" / "colab"
+    utils = colab / "utils"
+    for entry in (str(root), str(colab), str(utils)):
+        if entry not in sys.path:
+            sys.path.insert(0, entry)
+    from scripts.colab.utils._subfolder_path_inject import inject_subfolder_paths
+
+    inject_subfolder_paths(colab)
 
 
 def bootstrap_repo(
@@ -99,9 +110,7 @@ def bootstrap_repo(
     root = discover_repo_root(clone_if_colab=clone_if_colab)
     if set_open_navigator_root:
         os.environ.setdefault("OPEN_NAVIGATOR_ROOT", str(root))
-    for entry in (str(root), str(root / "scripts" / "colab")):
-        if entry not in sys.path:
-            sys.path.insert(0, entry)
+    _ensure_colab_sys_path(root)
     return root
 
 
@@ -121,7 +130,7 @@ def _clear_stale_imports() -> None:
     for name in list(sys.modules):
         if name.startswith("scripts.colab") or name.startswith("scripts.utils.gdrive_paths"):
             sys.modules.pop(name, None)
-    for name in ("demo_scope", "pipeline_media_scope", "colab_bootstrap"):
+    for name in ("demo_scope", "pipeline_media_scope", "colab_bootstrap", "colab_paths"):
         sys.modules.pop(name, None)
     stale = os.environ.pop("GOVERNANCE_PIPELINE_DATA_ROOT", None)
     if stale:
@@ -170,9 +179,7 @@ def complete_section1_bootstrap(
     """
     repo_path = (repo or bootstrap_repo()).resolve()
     os.environ.setdefault("OPEN_NAVIGATOR_ROOT", str(repo_path))
-    for entry in (str(repo_path), str(repo_path / "scripts" / "colab")):
-        if entry not in sys.path:
-            sys.path.insert(0, entry)
+    _ensure_colab_sys_path(repo_path)
     _dotenv = repo_path / ".env"
     if _dotenv.is_file():
         try:
@@ -185,7 +192,7 @@ def complete_section1_bootstrap(
     _clear_stale_imports()
     _remove_ephemeral_colab_shell()
 
-    from scripts.colab.colab_paths import maybe_mount_google_drive, setup_notebook_paths
+    from scripts.colab.utils.colab_paths import maybe_mount_google_drive, setup_notebook_paths
 
     maybe_mount_google_drive()
     try:

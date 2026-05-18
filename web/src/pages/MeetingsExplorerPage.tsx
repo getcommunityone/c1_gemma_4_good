@@ -31,7 +31,7 @@ export default function MeetingsExplorerPage() {
       <h2 className="text-lg font-semibold text-slate-900">Gemma 4 meeting outputs</h2>
       <p className="mt-1 text-sm text-slate-600">
         Static index from the pipeline. Rebuild with{' '}
-        <code className="text-xs">python scripts/export_web_demo_index.py</code> after §6.
+        <code className="text-xs">python scripts/colab/export/export_web_demo_index.py</code> after §6.
       </p>
       {isLoading && <p className="mt-4 text-slate-500">Loading…</p>}
       {isError && <p className="mt-4 text-red-700">Missing gemma-demo/index.json</p>}

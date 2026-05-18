@@ -5,7 +5,8 @@
 **Hackathon track:** Digital Equity & Inclusivity
 **Submission writeup:** [SUBMISSION.md](SUBMISSION.md) · **Pitch deck:** [PITCH_DECK.md](PITCH_DECK.md) · **3-min video:** [VIDEO_SCRIPT.md](VIDEO_SCRIPT.md)
 **Architecture:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Rules compliance:** [RULES_CHECKLIST.md](RULES_CHECKLIST.md)
-**Live demos:** [Colab notebook](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb) · [Web UI](https://getcommunityone.github.io/c1_gemma_4_good/) (GitHub Pages)
+**Live demos:** [Colab notebook](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb) · [Web UI](https://getcommunityone.github.io/c1_gemma_4_good/) (GitHub Pages)
+**Judges start here:** [JUDGES.md](JUDGES.md)
 
 ---
 
@@ -83,10 +84,11 @@ Static React app (no API): **search** + **ACS data explorer** + **Gemma meetings
 
 - **Live:** https://getcommunityone.github.io/c1_gemma_4_good/
 - **Local:** `npm run install:web && npm run dev` (from repo root; UI lives in `web/`)
-- After §6: `python scripts/export_web_demo_index.py` refreshes meeting/search JSON
+- **Deploy:** automatic on push to `main` ([GitHub Action](.github/workflows/deploy-github-pages.yml)); manual: `npm run deploy` ([web/README.md](web/README.md))
+- After §6: `python scripts/colab/export/export_web_demo_index.py` refreshes meeting/search JSON
 
 ### B) Reproducible pipeline — *prove the technology is real*
-[**▶ Open `02_run_meeting_llm.ipynb` in Google Colab**](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb)
+[**▶ Open `run_in_colab.ipynb` in Google Colab**](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb)
 
 1. Add `GEMINI_API_KEY` to **Colab Secrets** (free key from [aistudio.google.com](https://aistudio.google.com)).
 2. **Runtime → Run all** (CPU is fine for Phase 1; switch to L4 GPU for Phase 2 audio).
@@ -116,15 +118,16 @@ c1_gemma_4_good/
 │   ├── public/data/                 ← census-map subset + search-index.json
 │   └── src/                         ← Home, Search, Data explorer
 ├── scripts/
-│   ├── export_web_demo_index.py     ← pipeline outputs → web JSON
 │   ├── colab/                       ← the working pipeline (battle-tested)
-│   │   ├── 02_run_meeting_llm.ipynb ← judges run this
+│   │   ├── run_in_colab.ipynb       ← judges run this
+│   │   ├── export/                  ← pipeline outputs → web JSON
+│   │   ├── utils/                   ← bootstrap, paths, WSL Drive mount
 │   │   ├── governance_meeting_llm.py    (Gemma client, walker, drift detector)
 │   │   ├── gatekeeper_triage.py         (Demo 0 — Gemma decides what counts)
 │   │   ├── gemma_hf_backend.py          (offline / HF fallback)
 │   │   ├── colab_safety_review.py       (ShieldGemma final pass)
-│   │   └── …                            (38 supporting modules)
-│   ├── discovery/                   ← naming-convention discovery
+│   │   ├── discovery/                   ← meeting PDF naming helpers
+│   │   └── …                            (supporting modules)
 │   └── utils/                       ← path resolution
 └── tests/                           ← unit tests for bootstrap + UI
 ```
@@ -135,8 +138,8 @@ c1_gemma_4_good/
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env  # fill in GEMINI_API_KEY (and HF_TOKEN for offline mode)
-bash scripts/colab/mount_drive.sh
-jupyter lab scripts/colab/02_run_meeting_llm.ipynb
+bash scripts/colab/utils/mount_drive.sh
+jupyter lab scripts/colab/run_in_colab.ipynb
 ```
 
 Run cells §1 → §6. Outputs mirror to your Drive at `…/03_processed_outputs/02_gemma_json/`.

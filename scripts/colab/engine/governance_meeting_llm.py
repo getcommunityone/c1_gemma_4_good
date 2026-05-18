@@ -2,7 +2,7 @@
 Helpers for governance meeting analysis → structured JSON (policy_analysis prompt).
 
 Designed for the **2026 Gemma 4 Good Hackathon** demo notebook
-(`02_run_meeting_llm.ipynb`). The four headline Gemma 4 capabilities the
+(`run_in_colab.ipynb`). The four headline Gemma 4 capabilities the
 demo exercises:
 
 1. **Native multimodality / visual document parsing** — `call_google_genai_multimodal`
@@ -2541,7 +2541,7 @@ def mime_for(path: Path) -> str:
 
 # ─────────────────────────────────────────────────────────────
 # Backwards-compatibility: legacy OpenAI-compatible call kept for the
-# `02_run_meeting_llm.ipynb` Together.ai cell in the prior notebook revision.
+# `run_in_colab.ipynb` Together.ai cell in the prior notebook revision.
 # Not used by the Gemma 4 demo cells.
 # ─────────────────────────────────────────────────────────────
 

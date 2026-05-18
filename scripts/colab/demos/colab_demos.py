@@ -1,7 +1,7 @@
 """
 Notebook demos 1–4 extracted for per-jurisdiction end-to-end runs.
 
-Imported by ``jurisdiction_pipeline`` and optionally by ``02_run_meeting_llm.ipynb``.
+Imported by ``jurisdiction_pipeline`` and optionally by ``run_in_colab.ipynb``.
 """
 
 from __future__ import annotations

@@ -25,8 +25,8 @@ def in_colab() -> bool:
 
 
 def repo_root_from_this_file() -> Path:
-    """``c1_gemma_4_good`` root: ``.../scripts/colab/colab_paths.py`` → ``parents[2]``."""
-    return Path(__file__).resolve().parents[2]
+    """``c1_gemma_4_good`` root: ``.../scripts/colab/utils/colab_paths.py`` → ``parents[3]``."""
+    return Path(__file__).resolve().parents[3]
 
 
 def default_hackathon_pipeline_root_in_repo() -> Path:
