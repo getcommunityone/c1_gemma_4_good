@@ -8,32 +8,30 @@ Two ways to evaluate CommunityOne in under 10 minutes. Pick either.
 
 Static React app. Search every U.S. local-government website, browse ACS census data, and read pre-generated Gemma-4 meeting summaries. Loads in your browser; nothing to run.
 
-## 2. Reproducible Gemma 4 pipeline (5 min setup, ~45 min run)
+## 2. Reproducible Gemma 4 pipeline (~45–75 min on Colab)
 
 [**▶ Open `run_in_colab.ipynb` in Google Colab**](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb)
 
-1. Add `GEMINI_API_KEY` (and `HF_TOKEN` for video) to **Colab Secrets** (free key from <https://aistudio.google.com>).
-2. Set runtime to **L4 GPU** (or T4) and keep it for the whole run.
-3. Run **§0** (judge mode — public folder URL is pre-filled), then **§1 Bootstrap**.
-4. §1 **downloads** the public demo corpus to `/content/governance_pipeline_local` (no personal Google Drive).
-5. Continue **§2 → §5**, then run **§6 Judge — all-in-one (GPU)** only (skip CPU / checkpoint / two-phase cells).
-6. Outputs land in `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…` under that local root.
+### Run order (one GPU — no CPU switch)
 
-If you change runtime or restart the kernel, re-run **§0 → §1 → §5** and the all-in-one cell (not the checkpoint cell).
+1. **Runtime → L4 GPU** (or T4), **High RAM** if offered — keep this for the whole notebook.
+2. Colab **Secrets**: `GEMINI_API_KEY` and `HF_TOKEN` (notebook access **ON**).
+3. Run **§0 → §1 → §2 → §3 → §4 → §5 → §6** (single §6 code cell — PDF + video).
+4. Outputs: `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…` under `/content/governance_pipeline_local`.
 
-§0 sets (you do not need to paste this if you ran the §0 cell):
+**No Google Drive for Desktop** — §1 downloads the public demo corpus via `gdown`.
+
+If the session restarts, re-run **§0 → §1 → §5 → §6** (do not change runtime type mid-run).
+
+§0 sets (automatically on Colab):
 
 ```python
 import os
 
 os.environ["GOVERNANCE_PIPELINE_DATA_ROOT"] = "/content/governance_pipeline_local"
 os.environ["GOVERNANCE_RAW_INPUTS_DRIVE_FOLDER_URL"] = "https://drive.google.com/drive/folders/1H_narmvkEUEalAyvl1P2oY7XbzaVMD7_?usp=sharing"
-os.environ["GOVERNANCE_GATEKEEPER_LOG_DIR"] = "/content/governance_pipeline_local/00_logs"
+os.environ["GOVERNANCE_COLAB_SINGLE_RUNTIME"] = "1"
 ```
-
-**No Google Drive for Desktop and no Drive mount prompt** — inputs are copied from the public link; outputs stay on the Colab VM disk.
-
-Total time: **45–75 minutes** end-to-end on Colab free tier with `SCOPE = "fast"`.
 
 ## What to read while it runs
 
@@ -49,5 +47,6 @@ Total time: **45–75 minutes** end-to-end on Colab free tier with `SCOPE = "fas
 ## If something breaks
 
 - **Colab badge 404s:** the notebook lives at [`scripts/colab/run_in_colab.ipynb`](scripts/colab/run_in_colab.ipynb).
-- **No API key on hand:** the web UX (entry point #1) requires neither a key nor an install.
-- **Offline / no Colab:** set `GOVERNANCE_LLM_BACKEND=huggingface` and the same notebook runs end-to-end on a local L4 GPU with no network egress.
+- **No API key:** use the web UX (entry point #1) or add `GEMINI_API_KEY` / `HF_TOKEN` to Colab Secrets and re-run §4.
+- **`ModuleNotFoundError` after restart:** re-run §0 → §1 (re-clones repo to `/content/c1_gemma_4_good`), then §5 → §6.
+- **Offline / no Colab:** set `GOVERNANCE_LLM_BACKEND=huggingface` and run on a local L4 GPU.
