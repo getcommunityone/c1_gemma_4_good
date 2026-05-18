@@ -5,7 +5,7 @@
 **Track:** Digital Equity & Inclusivity
 **Submission:** [SUBMISSION.md](SUBMISSION.md) · [Pitch deck](PITCH_DECK.md) · [3-min video](VIDEO_SCRIPT.md)
 **Reference:** [Architecture](ARCHITECTURE.md) · [Rules compliance](RULES_CHECKLIST.md)
-**Live demos:** [Colab notebook](#b-reproducible-pipeline) · [Web UI](https://getcommunityone.github.io/c1_gemma_4_good/)
+**Live demos:** [Judges quickstart](JUDGES.md) · [Colab notebook](#b-reproducible-pipeline) · [Web UI](https://getcommunityone.github.io/c1_gemma_4_good/)
 
 ---
 
@@ -69,17 +69,20 @@ Static React app, **no API key needed**: search + ACS data explorer + Gemma meet
 
 - **Live:** https://getcommunityone.github.io/c1_gemma_4_good/
 - **Local:** `npm run install:web && npm run dev`
-- After pipeline §6: `python scripts/export_web_demo_index.py` refreshes meeting/search JSON.
+- After pipeline §6: `python scripts/colab/export/export_web_demo_index.py` refreshes meeting/search JSON.
 
 ### B) Reproducible pipeline — prove the technology is real
 
-1. Open [`02_run_meeting_llm.ipynb`](scripts/colab/02_run_meeting_llm.ipynb) in Google Colab.
-2. Add `GEMINI_API_KEY` to Colab Secrets ([free key](https://aistudio.google.com)).
-3. **Runtime → Run all.** CPU is fine for Phase 1; switch to L4 GPU for Phase 2 audio.
-4. Pre-staged demo corpus auto-mounts from a public Drive folder.
-5. Outputs land in `03_processed_outputs/02_gemma_json/AL/county/county_01125/…`.
+**[▶ Open `run_in_colab.ipynb` in Google Colab](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb)** (step-by-step: [JUDGES.md](JUDGES.md)).
 
-**Total time: 45–75 minutes end-to-end on Colab free tier** (`SCOPE = "fast"`). A scripted, no-Colab entry point also exists — see [`demos/`](demos/).
+1. Add Colab Secrets: `GEMINI_API_KEY` ([free key](https://aistudio.google.com)) and `HF_TOKEN` ([Hugging Face](https://huggingface.co/settings/tokens)) for Phase 2 video.
+2. **Runtime → CPU** — run **§1 → §5**, then **§6 Phase 1** (gatekeeper + PDF / Demo 3).
+3. **Runtime → L4 GPU** → **Restart session** → re-run **§1 → §5** → complete the **checkpoint** cells → **§6 Phase 2** (ffmpeg + Demo 4).
+4. Do **not** use **Run all** across a runtime switch; the notebook uses interactive dropdown gates between phases.
+5. Pre-staged demo corpus auto-mounts from Drive (`CommunityOne/hackathons/2026_Gemma_4_Good`).
+6. Outputs land in `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…` (e.g. `AL/county/county_01125/…`).
+
+**Total time: 45–75 minutes end-to-end on Colab free tier** (`SCOPE = "fast"`). A scripted smoke test without Colab: [`demos/quickstart.sh`](demos/quickstart.sh).
 
 ---
 
@@ -88,12 +91,12 @@ Static React app, **no API key needed**: search + ACS data explorer + Gemma meet
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-cp .env.example .env          # fill in GEMINI_API_KEY (and HF_TOKEN for offline mode)
-bash scripts/colab/mount_drive.sh
-jupyter lab scripts/colab/02_run_meeting_llm.ipynb
+cp .env.example .env          # GEMINI_API_KEY; HF_TOKEN for Phase 2 / offline HF
+bash scripts/colab/utils/mount_drive.sh   # optional: WSL Drive mount
+jupyter lab scripts/colab/run_in_colab.ipynb
 ```
 
-Run cells §1 → §6. Outputs mirror to Drive at `…/03_processed_outputs/02_gemma_json/`.
+Run **§1 → §5 → §6** (two-phase: CPU then GPU). Outputs mirror to Drive under `…/03_processed_outputs/02_gemma_json/`. Details: [`scripts/colab/README.md`](scripts/colab/README.md).
 
 ---
 
@@ -112,18 +115,21 @@ Built for communities where privacy is non-negotiable. Three guarantees:
 ```
 c1_gemma_4_good/
 ├── README.md                                ← you are here
+├── JUDGES.md                                ← 10-minute judge entry (web + Colab)
 ├── SUBMISSION.md                            ← Kaggle writeup (≤ 1,500 words)
 ├── ARCHITECTURE.md                          ← system diagram + Gemma 4 feature map
 ├── RULES_CHECKLIST.md                       ← every rule mapped to evidence
 ├── VIDEO_SCRIPT.md                          ← 3-minute pitch storyboard
-├── demos/quickstart.sh                      ← single-command judge entry point
+├── demos/quickstart.sh                      ← Gatekeeper smoke test (no Colab)
 ├── prompts/policy_analysis_v1.md            ← deconstruction prompt + JSON schema
 ├── web/                                     ← static React UI (GitHub Pages)
-├── scripts/colab/02_run_meeting_llm.ipynb   ← judges run this
-├── scripts/colab/                           ← 38 supporting modules (Gemma client,
-│                                              gatekeeper, HF backend, ShieldGemma)
+├── scripts/colab/run_in_colab.ipynb         ← judges run this (Colab or Jupyter)
+├── scripts/colab/README.md                  ← Drive layout, env vars, module map
+├── scripts/colab/{engine,demos,triage,…}/   ← pipeline Python (Gemma, gatekeeper, HF)
 └── tests/                                   ← bootstrap + UI tests
 ```
+
+Legacy notebook names `02_run_meeting_llm.ipynb` / `03_run_meeting_llm.ipynb` were renamed to **`run_in_colab.ipynb`**.
 
 ---
 
