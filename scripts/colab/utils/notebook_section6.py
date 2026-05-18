@@ -74,15 +74,14 @@ def load_api_keys_into_ns(ns: Dict[str, Any], repo: Optional[Path] = None) -> bo
 
     default_local_secrets_mode()
     try:
-        from colab_secrets import load_dotenv_from_parents
+        from colab_secrets import load_dotenv_all_candidates
     except ImportError:
-        from utils.colab_secrets import load_dotenv_from_parents  # type: ignore
+        from utils.colab_secrets import load_dotenv_all_candidates  # type: ignore
 
-    load_dotenv_from_parents(Path.cwd())
-    load_repo_dotenv(repo)
-    env_root = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
-    if env_root:
-        load_repo_dotenv(env_root)
+    pipe_root = None
+    if ns.get("PIPE") is not None:
+        pipe_root = getattr(ns["PIPE"], "root", None)
+    load_dotenv_all_candidates(repo=repo, pipeline_root=pipe_root)
     gemini = sanitize_api_key(
         get_notebook_secret("GEMINI_API_KEY", repo=repo)
         or get_notebook_secret("GOOGLE_API_KEY", repo=repo)
@@ -290,12 +289,23 @@ def prepare_section6_phase1(namespace: Optional[Dict[str, Any]] = None) -> Dict[
     hydrate_pipeline_paths(ns)
 
     if not ns.get("API_KEY"):
+        try:
+            from colab_runtime_phases import hydrate_api_and_models
+        except ImportError:
+            from runtime.colab_runtime_phases import hydrate_api_and_models  # type: ignore
+
+        hydrate_api_and_models(ns)
+    if not ns.get("API_KEY"):
         if not load_api_keys_into_ns(ns, repo):
+            _repo_hint = str(repo or os.environ.get("OPEN_NAVIGATOR_ROOT", "/content/c1_gemma_4_good"))
             raise RuntimeError(
                 "GEMINI_API_KEY is missing. Before §6:\n"
-                "  • Local / Colab extension: copy .env.example → .env with GEMINI_API_KEY=...\n"
-                "  • Colab cloud: 🔑 Secrets → GEMINI_API_KEY (notebook access ON)\n"
-                "Then re-run §4 (must print model lines) or run this §6 Phase 1 cell again."
+                "  • Colab cloud: 🔑 Secrets → GEMINI_API_KEY (notebook access ON), then re-run §4\n"
+                "  • Or upload .env to "
+                f"{_repo_hint}/.env\n"
+                "  • Or in §0 set: os.environ['GEMINI_API_KEY'] = 'AIza...'  (paste your key)\n"
+                "  • Local / Cursor: copy .env.example → .env in the repo, re-run §1 and §4\n"
+                "Then re-run §4 (must print model lines) or this §6 Phase 1 cell again."
             )
 
     ensure_inventories(ns, repo)

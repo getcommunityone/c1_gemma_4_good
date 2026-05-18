@@ -21,13 +21,16 @@
     "d3-geo": "^3.1.1",
     "framer-motion": "^11.18.2",
     "leaflet": "^1.9.4",
+    "mermaid": "^10.6.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
+    "react-markdown": "^9.0.1",
     "react-router-dom": "^6.20.0",
     "react-select": "^5.10.2",
     "react-simple-maps": "^3.0.0",
     "recharts": "^2.10.3",
+    "remark-gfm": "^4.0.0",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {

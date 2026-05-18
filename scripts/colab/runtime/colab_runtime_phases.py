@@ -324,32 +324,18 @@ def hydrate_pipeline_paths(namespace: Optional[Dict[str, Any]] = None) -> None:
 
 
 def _load_dotenv_everywhere(repo: Optional[Path] = None) -> None:
-    """Load ``.env`` from repo, ``OPEN_NAVIGATOR_ROOT``, and parent folders of ``cwd``."""
+    """Load ``.env`` from repo, pipeline root, Drive paths, and ``cwd`` parents."""
     try:
-        from colab_secrets import (
-            default_local_secrets_mode,
-            load_dotenv_from_parents,
-            load_repo_dotenv,
-        )
+        from colab_secrets import default_local_secrets_mode, load_dotenv_all_candidates
     except ImportError:
         from utils.colab_secrets import (  # type: ignore
             default_local_secrets_mode,
-            load_dotenv_from_parents,
-            load_repo_dotenv,
+            load_dotenv_all_candidates,
         )
 
-    try:
-        from colab_secrets import load_first_project_dotenv
-    except ImportError:
-        from utils.colab_secrets import load_first_project_dotenv  # type: ignore
-
     default_local_secrets_mode()
-    load_first_project_dotenv()
-    if repo is not None:
-        load_repo_dotenv(repo)
-    env_root = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
-    if env_root:
-        load_repo_dotenv(env_root)
+    pipeline_root = (os.environ.get("GOVERNANCE_PIPELINE_DATA_ROOT") or "").strip() or None
+    load_dotenv_all_candidates(repo=repo, pipeline_root=pipeline_root)
 
 
 def hydrate_api_and_models(namespace: Optional[Dict[str, Any]] = None) -> bool:

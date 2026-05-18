@@ -38,11 +38,8 @@ def notebook_runs_locally() -> bool:
 
 
 def default_local_secrets_mode() -> None:
-    """Skip Colab ``userdata`` when local, judge mode, or keys already in ``os.environ``."""
+    """Skip Colab ``userdata`` on local Jupyter / Cursor / Colab extension, not on Colab cloud."""
     if notebook_runs_locally():
-        os.environ.setdefault("GOVERNANCE_NOTEBOOK_SECRETS", "env_only")
-        return
-    if os.environ.get("GOVERNANCE_JUDGE_MODE", "").strip().lower() in ("1", "true", "yes"):
         os.environ.setdefault("GOVERNANCE_NOTEBOOK_SECRETS", "env_only")
         return
     if (os.environ.get("GEMINI_API_KEY") or "").strip():
