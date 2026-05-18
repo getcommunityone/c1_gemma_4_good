@@ -29,7 +29,16 @@ def in_colab_runtime() -> bool:
         "yes",
     ):
         return True
-    return bool(os.environ.get("COLAB_RELEASE_TAG")) and Path("/content").is_dir()
+    if bool(os.environ.get("COLAB_RELEASE_TAG")) and Path("/content").is_dir():
+        return True
+    if not Path("/content").is_dir():
+        return False
+    try:
+        import google.colab  # type: ignore[import-not-found]
+
+        return True
+    except Exception:
+        return False
 
 
 def notebook_runs_locally() -> bool:
