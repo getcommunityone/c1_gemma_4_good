@@ -1,0 +1,14 @@
+# Gemma 4 Good hackathon pipeline (local Jupyter + Colab §3 install cell)
+python-dotenv>=1.0
+google-genai>=1.0
+pymupdf>=1.24
+pdf2image>=1.17.0
+librosa>=0.10
+Pillow>=10.0
+httpx>=0.27
+
+# Demo 4 on GPU (optional — Phase 2)
+# torch
+# transformers
+# accelerate
+# huggingface_hub
