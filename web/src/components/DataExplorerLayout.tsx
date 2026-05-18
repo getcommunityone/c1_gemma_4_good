@@ -1,0 +1,70 @@
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import {
+  DATA_EXPLORER_JURISDICTION_QUALITY,
+  DATA_EXPLORER_MAP_BASE,
+  DATA_EXPLORER_MEETINGS,
+  DATA_EXPLORER_SCORECARD,
+} from '../utils/dataExplorerPaths'
+
+function tabCls({ isActive }: { isActive: boolean }) {
+  return [
+    'inline-flex items-center gap-1.5 border-b-2 px-2.5 py-1.5 text-sm font-medium transition-colors',
+    isActive
+      ? 'border-teal-600 text-teal-800'
+      : 'border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900',
+  ].join(' ')
+}
+
+/** Hackathon data explorer: static ACS map/scorecard + jurisdiction quality + Gemma meetings. */
+export default function DataExplorerLayout() {
+  const { pathname } = useLocation()
+  const onMap = pathname.startsWith(`${DATA_EXPLORER_MAP_BASE}/`) || pathname === DATA_EXPLORER_MAP_BASE
+  const onScorecard = pathname.startsWith(DATA_EXPLORER_SCORECARD)
+  const onJurisdictionQuality =
+    pathname === DATA_EXPLORER_JURISDICTION_QUALITY ||
+    pathname.startsWith(`${DATA_EXPLORER_JURISDICTION_QUALITY}/`)
+  const onMeetings =
+    pathname === DATA_EXPLORER_MEETINGS || pathname.startsWith(`${DATA_EXPLORER_MEETINGS}/`)
+
+  return (
+    <div className="flex min-h-[calc(100dvh-4.25rem)] flex-1 flex-col bg-slate-200">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 min-h-0 flex-col px-3 py-2 sm:px-4 md:px-5 md:py-3">
+        <header className="shrink-0 rounded-lg border border-slate-300/80 bg-white px-3 py-2 shadow-sm sm:px-4 sm:py-2">
+          <h1 className="text-lg font-semibold leading-tight text-slate-900 sm:text-xl">Data explorer</h1>
+          <p className="mt-0.5 max-w-[52rem] text-[11px] leading-snug text-slate-600 sm:text-xs">
+            ACS map & scorecard (static bundle), jurisdiction mapping quality, and Gemma 4 meeting outputs — no API
+            required.
+          </p>
+          <nav
+            className="mt-1.5 -mx-1 flex gap-1 overflow-x-auto px-1 pb-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+            aria-label="Data explorer views"
+          >
+            <NavLink to={DATA_EXPLORER_MAP_BASE} className={({ isActive }) => tabCls({ isActive })}>
+              Map
+            </NavLink>
+            <NavLink to={DATA_EXPLORER_SCORECARD} className={({ isActive }) => tabCls({ isActive })}>
+              Scorecard
+            </NavLink>
+            <NavLink to={DATA_EXPLORER_JURISDICTION_QUALITY} end className={({ isActive }) => tabCls({ isActive })}>
+              Data quality
+            </NavLink>
+            <NavLink to={DATA_EXPLORER_MEETINGS} end className={({ isActive }) => tabCls({ isActive })}>
+              Meetings (Gemma)
+            </NavLink>
+          </nav>
+          {(onMap || onScorecard || onJurisdictionQuality || onMeetings) && (
+            <p className="mt-0.5 text-[10px] text-slate-600 sm:text-[11px]" aria-live="polite">
+              {onMap && 'National & state choropleth from published ACS JSON.'}
+              {onScorecard && 'Trend scorecard from the same static bundle.'}
+              {onJurisdictionQuality && 'Website mapping coverage snapshot (jurisdiction_mapping_quality.json).'}
+              {onMeetings && 'Policy JSON & summaries exported from the Gemma pipeline (gemma-demo index).'}
+            </p>
+          )}
+        </header>
+        <div className="mt-2 min-h-0 min-w-0 flex-1 rounded-xl border border-slate-400/50 bg-slate-300/40 p-1.5 shadow-inner sm:p-2">
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  )
+}

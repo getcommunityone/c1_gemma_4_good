@@ -1,22 +1,41 @@
-# CommunityOne — Gemma 4 for the Places the Internet Forgot
+# CommunityOne — Defying Gravity for Local Democracy
 
-> **Local government runs on PDFs, audio recordings, and three-hour meetings nobody watches. We feed all of it to Gemma 4 and hand the results back to the community — for free, in plain English, on any laptop with an API key or any GPU with Hugging Face.**
+> *"You and I — defying gravity."*
 
 **Hackathon track:** Digital Equity & Inclusivity
-**Submission:** see [SUBMISSION.md](SUBMISSION.md)
-**Rules compliance:** see [RULES_CHECKLIST.md](RULES_CHECKLIST.md)
-**Architecture & Gemma 4 feature map:** see [ARCHITECTURE.md](ARCHITECTURE.md)
-**Three-minute video storyboard:** see [VIDEO_SCRIPT.md](VIDEO_SCRIPT.md)
+**Submission writeup:** [SUBMISSION.md](SUBMISSION.md) · **Pitch deck:** [PITCH_DECK.md](PITCH_DECK.md) · **3-min video:** [VIDEO_SCRIPT.md](VIDEO_SCRIPT.md)
+**Architecture:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Rules compliance:** [RULES_CHECKLIST.md](RULES_CHECKLIST.md)
+**Live demos:** [Colab notebook](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb) · [Web UI](https://getcommunityone.github.io/c1_gemma_4_good/) (GitHub Pages)
 
 ---
 
-## The problem
+## Act 1 — The "Impossible" Reality
 
-Half of all U.S. counties are now [news deserts](https://localnewsinitiative.northwestern.edu/projects/state-of-local-news/2024/report/) — communities with **zero or one local newspaper**. When the press disappears, so does the only watchdog on the city council, the planning board, and the fire-district budget hearing. The decisions still happen. The PDFs still go up. The meetings are still recorded. Nobody is reading or watching.
+When I asked for a list of every city, county, and school-district website in my state, Google called it **"technically impossible."**
 
-Civic-tech tools (Granicus, SeeClickFix, Documenters.org) exist for the largest cities. They skip the **18,000 small townships, counties, school boards, and special districts** where most American policy actually gets made.
+That reminded me of my wife Renee's favorite song, *Defying Gravity*. In that song, Elphaba says she is **"through with playing by the rules of someone else's game."**
 
-That gap *is* the digital-equity gap.
+"Impossible" didn't sit right with me.
+
+**CommunityOne is now the only place where you can find a free, complete list of local-government websites for every state in the nation.** Size shouldn't dictate your importance. But without these facts, we are running our country on emotions. Our kids are currently on track for a worse financial future than we had. At CommunityOne, we believe in an AI revolution powerful enough to map a better path — one we have never tried before.
+
+## Act 2 — The $500,000 "Public" Paywall
+
+Information is a luxury good. The federal government charges fees **exceeding $500,000** for "public" health data. Nonprofit aggregators charge thousands a year just to *see* a registry.
+
+When they do give you data, simple concepts — *who decided what and why* — are buried under expert jargon like *frame analysis*. It's a moat designed to keep the 99% of us without a PhD out of the conversation. **If you can't pay the toll or speak the jargon, you stay in the dark.**
+
+## Act 3 — The Truly Free Equalizer
+
+CommunityOne is the equalizer. Using **Gemma 4**, we've built a shared language.
+
+We map the Southern *"fixin' to"* and the Northern *"about to."* We map the academic jargon and the small-town common sense. We map all of it **into one clear view we can all understand.**
+
+We are the only truly free public platform that combines **meeting notes, donor dollars, and legislation** to measure what's actually working. We are breaking the technical *and* financial moats — replacing emotion with evidence.
+
+We aren't just summarizing. **We are mapping a better path for the next generation.**
+
+---
 
 ## What CommunityOne does
 
@@ -55,10 +74,18 @@ Eight distinct Gemma 4 capabilities, orchestrated against the same corpus:
 
 Architecture and feature mapping: [ARCHITECTURE.md](ARCHITECTURE.md).
 
-## Live demo (judges)
+## Live demos (judges)
 
-The fastest way to see Gemma 4 work end-to-end:
+Two entry points — pick whichever fits the next 5 minutes:
 
+### A) Web UX — *the equalizer in your browser*
+Static React app (no API): **search** + **ACS data explorer** + **Gemma meetings** tab.
+
+- **Live:** https://getcommunityone.github.io/c1_gemma_4_good/
+- **Local:** `npm run install:web && npm run dev` (from repo root; UI lives in `web/`)
+- After §6: `python scripts/export_web_demo_index.py` refreshes meeting/search JSON
+
+### B) Reproducible pipeline — *prove the technology is real*
 [**▶ Open `02_run_meeting_llm.ipynb` in Google Colab**](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb)
 
 1. Add `GEMINI_API_KEY` to **Colab Secrets** (free key from [aistudio.google.com](https://aistudio.google.com)).
@@ -85,7 +112,11 @@ c1_gemma_4_good/
 ├── prompts/
 │   ├── policy_analysis_v1.md        ← deconstruction prompt + JSON schema
 │   └── policy_analysis_sample_inputs.md
+├── web/                             ← static React UI (GitHub Pages)
+│   ├── public/data/                 ← census-map subset + search-index.json
+│   └── src/                         ← Home, Search, Data explorer
 ├── scripts/
+│   ├── export_web_demo_index.py     ← pipeline outputs → web JSON
 │   ├── colab/                       ← the working pipeline (battle-tested)
 │   │   ├── 02_run_meeting_llm.ipynb ← judges run this
 │   │   ├── governance_meeting_llm.py    (Gemma client, walker, drift detector)

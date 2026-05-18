@@ -1,6 +1,8 @@
 .env
 .venv/
 .venv-dbt/
+web/node_modules/
+web/dist/
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
