@@ -482,6 +482,8 @@ def require_section6_prereqs(namespace: Optional[Dict[str, Any]] = None) -> None
     hydrate_api_and_models(ns)
 
     missing = [name for name in SECTION6_REQUIRED_NAMES if name not in ns]
+    if "INVENTORIES" in ns and not ns.get("INVENTORIES"):
+        missing = list(dict.fromkeys([*missing, "INVENTORIES (empty — re-run §5)"]))
 
     if missing:
         if "INVENTORIES" in missing or _SECTION5_PATH_NAMES.intersection(missing):

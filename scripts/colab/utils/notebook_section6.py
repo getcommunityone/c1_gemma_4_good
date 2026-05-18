@@ -151,6 +151,76 @@ def load_api_keys_into_ns(ns: Dict[str, Any], repo: Optional[Path] = None) -> bo
     return True
 
 
+def ensure_inventories(ns: Dict[str, Any], repo: Optional[Path] = None) -> list[Any]:
+    """
+    Build ``INVENTORIES`` when §5 was skipped or the kernel was restarted after §5.
+
+    Syncs judge public corpus first when ``01_raw_inputs`` is empty.
+    """
+    existing = ns.get("INVENTORIES")
+    if existing:
+        return existing
+
+    try:
+        from colab_runtime_phases import hydrate_pipeline_paths
+    except ImportError:
+        from runtime.colab_runtime_phases import hydrate_pipeline_paths  # type: ignore
+
+    hydrate_pipeline_paths(ns)
+
+    pipe = ns.get("PIPE")
+    if pipe is None:
+        raise RuntimeError("PIPE missing — re-run §3 Install, then §5 Inventory.")
+
+    try:
+        from scripts.utils.gdrive_paths import resolve_governance_raw_inputs_root
+    except ImportError:
+        from utils.gdrive_paths import resolve_governance_raw_inputs_root  # type: ignore
+
+    raw_root = Path(resolve_governance_raw_inputs_root(pipe.root))
+
+    try:
+        from judge_pipeline_sync import judge_mode_enabled, prepare_judge_pipeline
+    except ImportError:
+        from utils.judge_pipeline_sync import judge_mode_enabled, prepare_judge_pipeline  # type: ignore
+
+    if judge_mode_enabled() and not any(raw_root.rglob("*.pdf")) and not any(
+        raw_root.rglob("*.opus")
+    ):
+        print("§6: empty 01_raw_inputs — syncing public judge corpus (gdown)…")
+        prepare_judge_pipeline()
+        raw_root = Path(resolve_governance_raw_inputs_root(pipe.root))
+
+    if not raw_root.is_dir():
+        raise RuntimeError(
+            f"Raw inputs missing: {raw_root}\n"
+            "Re-run §0 → §1 (judge sync) → §5, or set GOVERNANCE_RAW_INPUTS_ROOT."
+        )
+
+    from governance_meeting_llm import walk_raw_inputs
+
+    try:
+        from demo_scope import filter_inventories_for_scope, get_active_preset
+    except ImportError:
+        sys.path.insert(0, str((repo or ns.get("PATHS").project_path) / "scripts" / "colab"))
+        from demo_scope import filter_inventories_for_scope, get_active_preset
+
+    all_inv = [inv for inv in walk_raw_inputs(raw_root) if inv.has_media]
+    scoped = filter_inventories_for_scope(all_inv, get_active_preset())
+
+    ns["DRIVE_RAW_ROOT"] = raw_root
+    ns["RAW_ROOT"] = raw_root
+    ns["INVENTORIES"] = scoped
+
+    print(f"§6: built inventory from {raw_root} → {len(scoped)} jurisdiction(s) for active scope")
+    if not scoped:
+        raise RuntimeError(
+            f"No PDF/audio found under {raw_root} for scope {get_active_preset().name!r}. "
+            "Re-run §0 → §1 (wait for gdown), then §5."
+        )
+    return scoped
+
+
 def prepare_section6_phase1(namespace: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Ensure §1–§5 globals exist; restore §4 keys if missing. Returns notebook namespace.
@@ -188,5 +258,6 @@ def prepare_section6_phase1(namespace: Optional[Dict[str, Any]] = None) -> Dict[
                 "Then re-run §4 (must print model lines) or run this §6 Phase 1 cell again."
             )
 
+    ensure_inventories(ns, repo)
     require_section6_prereqs(ns)
     return ns

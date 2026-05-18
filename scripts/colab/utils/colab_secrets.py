@@ -29,16 +29,7 @@ def in_colab_runtime() -> bool:
         "yes",
     ):
         return True
-    if bool(os.environ.get("COLAB_RELEASE_TAG")) and Path("/content").is_dir():
-        return True
-    if not Path("/content").is_dir():
-        return False
-    try:
-        import google.colab  # type: ignore[import-not-found]
-
-        return True
-    except Exception:
-        return False
+    return bool(os.environ.get("COLAB_RELEASE_TAG")) and Path("/content").is_dir()
 
 
 def notebook_runs_locally() -> bool:
@@ -47,8 +38,11 @@ def notebook_runs_locally() -> bool:
 
 
 def default_local_secrets_mode() -> None:
-    """Skip Colab ``userdata`` when local or keys already in ``os.environ``."""
+    """Skip Colab ``userdata`` when local, judge mode, or keys already in ``os.environ``."""
     if notebook_runs_locally():
+        os.environ.setdefault("GOVERNANCE_NOTEBOOK_SECRETS", "env_only")
+        return
+    if os.environ.get("GOVERNANCE_JUDGE_MODE", "").strip().lower() in ("1", "true", "yes"):
         os.environ.setdefault("GOVERNANCE_NOTEBOOK_SECRETS", "env_only")
         return
     if (os.environ.get("GEMINI_API_KEY") or "").strip():
@@ -237,38 +231,25 @@ def get_notebook_secret(name: str, *, repo: Optional[PathLike] = None) -> Option
     """
     Return a secret value or ``None``.
 
-    Never raises on Colab ``TimeoutException`` — falls back to env / ``.env``.
+    Order: ``.env`` / ``os.environ`` first, then Colab Secrets only when allowed.
+    Never prints on ``TimeoutException`` when ``GOVERNANCE_NOTEBOOK_SECRETS=env_only``.
     """
     default_local_secrets_mode()
     load_dotenv_all_candidates(repo=repo)
-    if in_colab_runtime() and not _skip_colab_userdata():
-        try:
-            from google.colab import userdata
 
-            val = userdata.get(name)
-            val = (val or "").strip()
-            if val:
-                return val
-        except Exception as exc:
-            print(
-                f"   ⚠ Colab secret {name!r} unavailable ({type(exc).__name__}: {exc}). "
-                f"Falling back to env / .env."
-            )
     env_val = (os.environ.get(name) or "").strip()
     if env_val:
         return env_val
-    if _secrets_from_env_only() or not in_colab_runtime() or _skip_colab_userdata():
+
+    if _secrets_from_env_only() or _skip_colab_userdata() or not in_colab_runtime():
         return None
+
     try:
         from google.colab import userdata
 
-        val = userdata.get(name)
-        return (val or "").strip() or None
-    except Exception as exc:
-        print(
-            f"   ⚠ Colab secret {name!r} unavailable ({type(exc).__name__}: {exc}). "
-            f"Use repo .env, os.environ, or Colab 🔑 Secrets."
-        )
+        val = (userdata.get(name) or "").strip()
+        return val or None
+    except Exception:
         return None
 
 
