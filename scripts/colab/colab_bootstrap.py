@@ -38,7 +38,7 @@ def discover_repo_root(
     colab_clone_dir: Path | None = None,
 ) -> Path:
     """
-    Resolve the ``open-navigator`` repository root.
+    Resolve the ``c1_gemma_4_good`` repository root.
 
     Order: ``OPEN_NAVIGATOR_ROOT`` → ``/content/c1_gemma_4_good`` → walk ``cwd``
     parents → ``git clone`` on Colab when ``clone_if_colab``.
@@ -80,7 +80,7 @@ def discover_repo_root(
         "Could not find the c1_gemma_4_good repository.\n\n"
         "What to do:\n"
         "  • Google Colab: open\n"
-        "      https://colab.research.google.com/github/getcommunityone/open-navigator/blob/main/scripts/colab/02_run_meeting_llm.ipynb\n"
+        "      https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/02_run_meeting_llm.ipynb\n"
         "    then re-run §1 (it clones to /content/c1_gemma_4_good).\n"
         "  • Cursor / local Jupyter: in the cell below §1, set:\n"
         "      import os\n"
