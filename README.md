@@ -70,6 +70,7 @@ Static React app, **no API key needed**: search + ACS data explorer + Gemma meet
 - **Live:** https://getcommunityone.github.io/c1_gemma_4_good/
 - **Local:** `npm run install:web && npm run dev`
 - After pipeline §6: `python scripts/colab/export/export_web_demo_index.py` refreshes meeting/search JSON.
+- **Published website data:** https://huggingface.co/datasets/CommunityOne/one-jurisdiction-mapping-analysis
 
 ### B) Reproducible pipeline — prove the technology is real
 

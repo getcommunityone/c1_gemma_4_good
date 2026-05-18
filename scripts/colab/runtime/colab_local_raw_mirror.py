@@ -20,6 +20,37 @@ from colab_timed_steps import timed_step
 from governance_meeting_llm import MeetingInventory, parse_jurisdiction_dir
 
 
+def _resolve_drive_raw_root(drive_raw_root: Path) -> Path:
+    try:
+        from scripts.utils.gdrive_paths import resolve_effective_raw_inputs_root
+    except ImportError:
+        return drive_raw_root.resolve()
+    return resolve_effective_raw_inputs_root(drive_raw_root)
+
+
+def _judge_local_flat_mirror_enabled(effective: Path, local_raw_root: Path) -> bool:
+    """Flatten nested judge gdown trees onto ``/content/…/01_raw_inputs`` (flat ``AL/…``)."""
+    if not local_raw_mirror_enabled() or not in_colab():
+        return False
+    if os.environ.get("GOVERNANCE_JUDGE_MODE", "").strip().lower() not in (
+        "1",
+        "true",
+        "yes",
+    ):
+        return False
+    try:
+        from scripts.utils.gdrive_paths import raw_inputs_has_jurisdiction_layout
+    except ImportError:
+        return False
+    local_raw_root = local_raw_root.resolve()
+    effective = effective.resolve()
+    if local_raw_root == effective:
+        return False
+    return raw_inputs_has_jurisdiction_layout(
+        effective
+    ) and not raw_inputs_has_jurisdiction_layout(local_raw_root)
+
+
 def local_raw_mirror_enabled() -> bool:
     if not in_colab():
         return False
@@ -126,6 +157,24 @@ def mirror_jurisdiction(drive_jur: Path, local_jur: Path, *, force: bool = False
     return True
 
 
+def inventories_aligned_with_raw_root(
+    inventories: List[MeetingInventory], raw_root: Path
+) -> bool:
+    """False when jurisdiction roots or media paths are outside ``raw_root`` or missing on disk."""
+    root = raw_root.expanduser().resolve()
+    if not inventories:
+        return False
+    for inv in inventories:
+        try:
+            inv.jurisdiction.root.resolve().relative_to(root)
+        except ValueError:
+            return False
+        for path in (*inv.pdfs, *inv.audio, *inv.images):
+            if not Path(path).is_file():
+                return False
+    return True
+
+
 def remap_inventory_paths(
     inv: MeetingInventory, local_jurisdiction_root: Path
 ) -> MeetingInventory:
@@ -163,14 +212,16 @@ def mirror_inventories_to_local_raw(
     ``local_raw_root`` after this call.
     """
     if not local_raw_mirror_enabled():
-        return inventories, drive_raw_root.resolve()
+        return inventories, _resolve_drive_raw_root(drive_raw_root)
 
-    drive_raw_root = drive_raw_root.resolve()
+    download_target = drive_raw_root.expanduser().resolve()
+    drive_raw_root = _resolve_drive_raw_root(download_target)
     local_raw_root = (local_raw_root or default_local_raw_root()).resolve()
     local_raw_root.mkdir(parents=True, exist_ok=True)
 
-    if not _is_drive_path(drive_raw_root):
-        # Already local or non-Colab path — nothing to mirror.
+    flatten_local = _judge_local_flat_mirror_enabled(drive_raw_root, local_raw_root)
+    if not _is_drive_path(download_target) and not flatten_local:
+        # Already local with flat ``AL/…`` layout — nothing to mirror.
         return inventories, drive_raw_root
 
     remapped: List[MeetingInventory] = []

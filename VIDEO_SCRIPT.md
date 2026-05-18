@@ -1,140 +1,146 @@
-# Video Script — CommunityOne (3:00 max)
-
-> Three acts. Verbatim narration. Per-second visual direction. Shoot on a clean dark background, single lavalier mic, one continuous take preferred. If you cut between takes, cut on the act breaks (1:00 and 2:00) so the rhythm is preserved.
->
-> **Target length:** 2:55 (5 seconds of head-/tail-room for the YouTube player).
-> **Source of authority:** this script is the canonical version. The pitch deck ([PITCH_DECK.md](PITCH_DECK.md)) is the visual track; the README/SUBMISSION are the written track. Keep all three voices identical.
-
+# CommunityOne — Defying Gravity for Local Democracy
+ 
+> *"You and I — defying gravity."*
+ 
+**Track:** Digital Equity & Inclusivity
+**Submission:** [SUBMISSION.md](SUBMISSION.md) · [Pitch deck](PITCH_DECK.md) · [3-min video](VIDEO_SCRIPT.md)
+**Reference:** [Architecture](ARCHITECTURE.md) · [Rules compliance](RULES_CHECKLIST.md)
+**Live demos:** [Colab notebook](#b-reproducible-pipeline) · [Web UI](https://getcommunityone.github.io/c1_gemma_4_good/)
+**Published website data:** https://huggingface.co/datasets/CommunityOne/one-jurisdiction-mapping-analysis
+ 
 ---
-
-## Cold open (0:00 – 0:05)
-
-- **Visual:** Black slide. White serif title appears: **"CommunityOne"** sub-title **"Defying Gravity for Local Democracy"**.
-- **Audio:** A single piano note. Hold.
-- **Narration:** *(silence)*
-
+ 
+## The Pitch
+ 
+When I asked Google for a list of every city, county, and school-district website in my state, the answer was **"technically impossible."** The federal government charges **$500,000+** for "public" health data. Nonprofit aggregators paywall basic registries behind thousand-dollar subscriptions. Where data does exist, it's buried in expert jargon — *frame analysis*, *fiscal incidence* — a moat designed to keep the 99% out of the conversation.
+ 
+**CommunityOne is now the only place where you can find a free, complete list of local-government websites for every state in the nation** — and the only truly free public platform that fuses meeting minutes, donor dollars, and legislation to measure what's actually working in local democracy.
+ 
+Built on **Gemma 4**, it speaks Southern *"fixin' to"* and Northern *"about to."* It reads a 1990s photocopied zoning amendment and a scholar's frame analysis with equal fluency, then maps both into one view anyone can understand. No PhD required. No toll.
+ 
+Size shouldn't dictate importance. Information shouldn't be a luxury good. **CommunityOne is the equalizer.**
+ 
 ---
-
-## Act 1 — The "Impossible" Reality (0:05 – 1:00)
-
-**Narration (verbatim — speak slowly, 105 wpm):**
-
-> "When I asked for a list of every city, county, and school-district website in my state, Google called it **'Technically Impossible.'**
->
-> That reminded me of my wife Renee's favorite song, *Defying Gravity*. In that song, Elphaba says she's *'through with playing by the rules of someone else's game.'*
->
-> *'Impossible'* didn't sit right with me.
->
-> **CommunityOne is now the only place where you can find a free, complete list of local-government websites for every state in the nation.** Size shouldn't dictate your importance.
->
-> But without these facts, we are running our country off of emotions. Our kids are currently on track to have a worse financial future than we did.
->
-> At CommunityOne, we believe in an AI revolution powerful enough to map a better path — one that we have never tried before."
-
-**Visual track (timed to narration):**
-
-| t (mm:ss) | Visual                                                                                                  |
-| --------- | ------------------------------------------------------------------------------------------------------- |
-| 0:05      | Cut to talking head, centered, dark navy background.                                                    |
-| 0:12      | Cut to a Google search-results screen reading "*Technically Impossible*". Hold 2s.                       |
-| 0:18      | Cut back to talking head as you say "wife Renee's favorite song."                                       |
-| 0:22      | Lower-third caption: *"…through with playing by the rules of someone else's game."* — *Defying Gravity*. |
-| 0:30      | Cut to live screen-capture of the CommunityOne web UX — the jurisdiction directory loading.            |
-| 0:36      | Zoom into the count badge: **50 states · 18,000+ jurisdictions**. Hold 2s.                              |
-| 0:40      | Cut to a U.S. map shaded by news-desert counties (Northwestern 2024 data, red shade).                   |
-| 0:48      | Overlay caption: *"Half of U.S. counties: zero or one local newsroom."*                                  |
-| 0:55      | Cut back to talking head as you say "AI revolution powerful enough."                                    |
-
+ 
+## What It Does
+ 
+Point CommunityOne at a folder of agendas, minutes PDFs, audio recordings, and contact photos for any jurisdiction. **Gemma 4 returns:**
+ 
+| Output | Who it serves |
+|---|---|
+| Plain-text OCR of scanned PDFs *(Demo 1)* | Residents decoding 1990s photocopies of zoning amendments |
+| Per-page token-budget routing *(Demo 2)* | Cost control — tables get 1,120 image tokens, body text gets 64 |
+| Policy deconstruction with visible reasoning *(Demo 3)* | Journalists & researchers — who steered each decision, and why |
+| Audio chunking + policy-drift detection *(Demo 4)* | Citizens — what changed between the agenda and the actual vote |
+| Plain transcripts in any language *(Demo 4a)* | Non-English-speaking residents |
+| Contact-photo enrichment *(Demo 5)* | Representation audits |
+| Cross-jurisdiction embedding clusters *(Demo 6)* | Researchers — is Tuscaloosa passing the same ordinance as Big Timber? |
+| ShieldGemma safety review *(final step)* | Every output checked for hallucination & stereotyping before publication |
+ 
+The pipeline runs against two real reference jurisdictions already ingested:
+ 
+- **Tuscaloosa County, Alabama** — mid-size urban county
+- **Big Timber & Sweet Grass County, Montana** — rural, population ~3,500
+Geography is encoded in the folder layout (`<STATE>/<scope>/<jurisdiction>/`), so FIPS codes, county names, and postal codes fall out of the path. Point at any other jurisdiction and the same code runs.
+ 
 ---
-
-## Act 2 — The $500,000 "Public" Paywall (1:00 – 2:00)
-
-**Narration (verbatim):**
-
-> "Information is currently a luxury good.
->
-> The government charges fees **exceeding $500,000** for *'public'* health data. Even nonprofit aggregators charge thousands in annual fees just to *see* a registry.
->
-> When they do give you data, simple concepts — *who decided what and why* — are buried under expert jargon like *'frame analysis.'*
->
-> It's a moat designed to keep the 99% of us without a PhD from having a say.
->
-> **If you can't pay the toll or speak the jargon, you stay in the dark.**"
-
-**Visual track:**
-
-| t (mm:ss) | Visual                                                                                                            |
-| --------- | ----------------------------------------------------------------------------------------------------------------- |
-| 1:00      | Cut to a giant typographic stat: **"$500,000+"** in warning yellow on dark navy. Hold 3s.                         |
-| 1:08      | Smaller stat below: **"to access 'public' health data."** Hold 2s.                                                  |
-| 1:15      | Cross-dissolve to a second stat: **"$1,000s/year"** — *just to **see** a registry.*                                |
-| 1:25      | Cut to a redacted academic abstract with red boxes around the words *frame analysis*, *normative*, *epistemic*.    |
-| 1:38      | Animate a moat / castle illustration — water rises around four small persona icons (reporter, abuela, volunteer, student). |
-| 1:50      | Cut to talking head for the closing line.                                                                          |
-| 1:58      | Caption appears: *"You stay in the dark."* Fade to black 2s.                                                        |
-
+ 
+## Why Gemma 4 — Eight Capabilities, One Corpus
+ 
+1. **Native multimodality** — PDFs and audio go in as bytes. No separate OCR. No separate ASR.
+2. **Adjustable media-resolution token budget** — HIGH (~1,120 tokens) for ledgers, LOW (~64) for body text. The model itself exposes cost-routing.
+3. **Built-in thinking mode** — `include_thoughts=True` returns chain-of-reasoning beside the answer. We publish both, so residents can audit the logic.
+4. **Long-context with alternating local + global attention** — 15-minute audio chunks stitched with a drift-detector pass for hours-long meetings.
+5. **Strict-JSON / response-schema function calling** — every output validates against the Pydantic-style schema in `prompts/policy_analysis_v1.md`. No prose-parsing fragility.
+6. **Mixed-size deployment** — Gatekeeper triage on **E2B/E4B** (edge); deep analysis on **26B-A4B-IT** or **31B**; safety on **ShieldGemma**; clustering on **EmbeddingGemma**.
+7. **Open-weights local fallback** — `GOVERNANCE_LLM_BACKEND=huggingface` swaps every AI Studio call for local HF weights. The same notebook runs end-to-end **offline** on a single L4 GPU.
+8. **Hybrid cloud + edge routing** — small files take the cheap E2B route; PDFs ≥1.5 MB and audio >15 min auto-escalate to 31B/26B.
+Full feature mapping: [ARCHITECTURE.md](ARCHITECTURE.md).
+ 
 ---
-
-## Act 3 — The Truly Free Equalizer (2:00 – 2:55)
-
-**Narration (verbatim):**
-
-> "CommunityOne is the equalizer.
->
-> Using **Gemma 4**, we've created a shared language. We map the Southern *'fixin' to'* and the Northern *'about to'* — and the academic jargon and the small-town common sense — into **one clear view we can all understand.**
->
-> We are the only truly free public platform combining **meeting notes, donor dollars, and legislation** to accurately measure what is actually working.
->
-> We are breaking the technical and financial moats to replace emotion with evidence. We aren't just summarizing — we are mapping a better path for the next generation.
->
-> *You and I — defying gravity.*"
-
-**Visual track:**
-
-| t (mm:ss) | Visual                                                                                                        |
-| --------- | ------------------------------------------------------------------------------------------------------------- |
-| 2:00      | Cut to the CommunityOne web UX search bar. Type "Big Timber, MT" live. Hit enter.                              |
-| 2:07      | Cut to a meeting decision card — agenda item, plain English summary, the *"competing interpretations"* panel. |
-| 2:14      | Cut to the policy-drift Mermaid diagram for a real meeting (agenda → vote divergence).                         |
-| 2:22      | Cut to the Gemma 4 architecture diagram from ARCHITECTURE.md. Highlight: E2B (edge) → 26B (batch) → ShieldGemma. |
-| 2:30      | Cut to a three-circle Venn: **Meetings · Money · Legislation**. CommunityOne logo at the center.              |
-| 2:38      | Cut to talking head: "We are mapping a better path for the next generation."                                   |
-| 2:48      | Cut to black. Title card: **CommunityOne · Defying Gravity for Local Democracy**.                              |
-| 2:52      | Sub-title fades in: *Built on Gemma 4 · Gemma 4 Good Hackathon · 2026*.                                       |
-| 2:55      | Last 5 seconds: black with project links (github.com/getcommunityone, Kaggle writeup, live demo URL).         |
-
+ 
+## Live Demos for Judges
+ 
+Two entry points — pick whichever fits the next 5 minutes.
+ 
+### A) Web UI — the equalizer in your browser
+Static React app, **no API key needed**: search + ACS data explorer + Gemma meetings tab.
+ 
+- **Live:** https://getcommunityone.github.io/c1_gemma_4_good/
+- **Local:** `npm run install:web && npm run dev`
+- After pipeline §6: `python scripts/export_web_demo_index.py` refreshes meeting/search JSON.
+### B) Reproducible pipeline — prove the technology is real
+ 
+1. Open [`02_run_meeting_llm.ipynb`](scripts/colab/02_run_meeting_llm.ipynb) in Google Colab.
+2. Add `GEMINI_API_KEY` to Colab Secrets ([free key](https://aistudio.google.com)).
+3. **Runtime → Run all.** CPU is fine for Phase 1; switch to L4 GPU for Phase 2 audio.
+4. Pre-staged demo corpus auto-mounts from a public Drive folder.
+5. Outputs land in `03_processed_outputs/02_gemma_json/AL/county/county_01125/…`.
+**Total time: 45–75 minutes end-to-end on Colab free tier** (`SCOPE = "fast"`). A scripted, no-Colab entry point also exists — see [`demos/`](demos/).
+ 
 ---
-
-## Shoot list (do before recording)
-
-- [ ] Confirm the live web UX (https://getcommunityone.github.io/c1_gemma_4_good/) returns a real result for "Big Timber, MT" on the Gemma-meetings tab.
-- [ ] Pre-render the policy-drift Mermaid diagram for the meeting you'll use on-screen (export as a PNG so the playback is smooth).
-- [ ] Capture a 30-second clean recording of the Colab notebook running Demo 3 (`.thinking.thoughts.md` writing live) — even if it doesn't appear in the cut, you'll want B-roll.
-- [ ] Render the **ARCHITECTURE.md §1** diagram as a high-res PNG (1920×1080) with the eight-feature legend.
-- [ ] Take three 5-second tripod-locked talking-head shots in case you need cutaways.
-- [ ] Have Renee record a single line of the *Defying Gravity* lyric — if she's comfortable, layer it under the cold open. (Optional, *and* a strong differentiator.)
-
-## Naming compliance
-
-Per Gemma 4 [naming guidelines](https://kaggle.com/competitions/gemma-4-good-hackathon), the video must say:
-
-- ✅ **"Gemma 4"** — not "Google's AI," not "Gemini."
-- ✅ Reference specific variants by name when shown on-screen (e.g., *"Gemma 4 26B-A4B-IT,"* *"ShieldGemma,"* *"EmbeddingGemma"*).
-- ❌ Do not say "powered by Google" without "Gemma 4."
-
-## Post
-
-- Upload to YouTube as **Public** (not Unlisted — judges must be able to find it without login).
-- Title: *"CommunityOne — Defying Gravity for Local Democracy (Gemma 4 Good Hackathon)"*
-- Description: paste the [SUBMISSION.md](SUBMISSION.md) summary + links.
-- Add chapters at 0:00, 1:00, 2:00 (Acts 1 / 2 / 3).
-- Closed captions: generate auto-captions, then manually verify the proper nouns (Renee, Elphaba, Gemma 4, ShieldGemma, EmbeddingGemma, Tuscaloosa, Big Timber).
-- Attach to the Kaggle writeup's Media Gallery as the cover video.
-
-## Backup plan (if you run long)
-
-If the 3-minute cap is tight, trim from Act 2 (paywall) first — Act 1 (story) and Act 3 (product) are non-negotiable. Concretely:
-
-- **Act 1:** never cut. The Renee / Elphaba beat *is* the video.
-- **Act 2:** the **$500,000** stat can stand alone; the *frame analysis* jargon callout is the line to drop if needed (saves ~10 seconds).
-- **Act 3:** never cut the *"You and I — defying gravity"* tag.
+ 
+## Quick Start (local WSL / Linux)
+ 
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+cp .env.example .env          # fill in GEMINI_API_KEY (and HF_TOKEN for offline mode)
+bash scripts/colab/mount_drive.sh
+jupyter lab scripts/colab/02_run_meeting_llm.ipynb
+```
+ 
+Run cells §1 → §6. Outputs mirror to Drive at `…/03_processed_outputs/02_gemma_json/`.
+ 
+---
+ 
+## Privacy Stance
+ 
+Built for communities where privacy is non-negotiable. Three guarantees:
+ 
+1. **No login wall** for the demo or code. Public Kaggle Notebook, public Colab, CC-BY-4.0.
+2. **No identifying data leaves the local machine in offline mode.** The entire pipeline runs against `google/gemma-4-E2B` / `E4B` / `26b-a4b-it` weights via Hugging Face. Toggle: `GOVERNANCE_LLM_BACKEND=huggingface`.
+3. **ShieldGemma reviews every LLM output** before it lands on disk. Demographic enrichment (Demo 5) is opt-in, capped per jurisdiction, and labeled *model-perceived, not factual*.
+---
+ 
+## Repo Layout (essentials)
+ 
+```
+c1_gemma_4_good/
+├── README.md                                ← you are here
+├── SUBMISSION.md                            ← Kaggle writeup (≤ 1,500 words)
+├── ARCHITECTURE.md                          ← system diagram + Gemma 4 feature map
+├── RULES_CHECKLIST.md                       ← every rule mapped to evidence
+├── VIDEO_SCRIPT.md                          ← 3-minute pitch storyboard
+├── demos/quickstart.sh                      ← single-command judge entry point
+├── prompts/policy_analysis_v1.md            ← deconstruction prompt + JSON schema
+├── web/                                     ← static React UI (GitHub Pages)
+├── scripts/colab/02_run_meeting_llm.ipynb   ← judges run this
+├── scripts/colab/                           ← 38 supporting modules (Gemma client,
+│                                              gatekeeper, HF backend, ShieldGemma)
+└── tests/                                   ← bootstrap + UI tests
+```
+ 
+---
+ 
+## License & Citation
+ 
+**License:** [CC-BY-4.0](LICENSE) — per hackathon rules §2.5 (Winner License).
+ 
+**Citation:** Ian Ballantyne, Glenn Cameron, María Cruz, Olivier Lacombe, Kristen Quan, and Omar Sanseviero. *The Gemma 4 Good Hackathon.* https://kaggle.com/competitions/gemma-4-good-hackathon, 2026. Kaggle.
+ 
+**Related:** Full production platform (private): `open-navigator`. This repo is the hackathon-shaped, public, CC-BY-4.0 carve-out.
+ 
+---
+ 
+## Closing — Defying Gravity
+ 
+My wife Renee's favorite song is *Defying Gravity*. In it, Elphaba says she's *"through with playing by the rules of someone else's game."*
+ 
+So am I.
+ 
+Our kids are on track for a worse financial future than we had — not because the data isn't there, but because it's locked away from the people who need it most. Without facts, we govern on emotion. Without a shared language, we can't even disagree productively.
+ 
+CommunityOne replaces emotion with evidence. It maps a better path. And it does it for free, for every jurisdiction, in every language people actually speak.
+ 
+**You and I — defying gravity.**

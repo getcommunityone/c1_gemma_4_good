@@ -22,7 +22,7 @@ import {
 } from '@heroicons/react/24/solid'
 
 const COLAB_URL =
-  'https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb'
+  'https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb#scrollTo=VSC-9f203009'
 const GITHUB_URL = 'https://github.com/getcommunityone/c1_gemma_4_good'
 
 const fadeUp = {
@@ -104,13 +104,6 @@ const GEMMA_FEATURES = [
   { title: 'Open-weight fallback', desc: 'Full pipeline offline on one L4 via Hugging Face.' },
   { title: 'ShieldGemma safety', desc: 'Hallucination & stereotype checks on every output.' },
   { title: 'EmbeddingGemma clustering', desc: 'Cross-town policy similarity at scale.' },
-]
-
-const PIPELINE_STEPS = [
-  { label: 'Inputs', items: ['PDFs', 'Audio', 'Photos'] },
-  { label: 'Gemma 4', items: ['Multimodal'] },
-  { label: 'Processing', items: ['OCR', 'Transcripts', 'Policy reasoning', 'Safety review'] },
-  { label: 'Output', items: ['Public dashboard'] },
 ]
 
 export default function HackathonHome() {
@@ -220,6 +213,24 @@ export default function HackathonHome() {
           <p className="mt-8 text-sm text-slate-500">
             No login · Static demo over Tuscaloosa County, AL & Sweet Grass County, MT
           </p>
+          <p className="mt-3 text-sm text-slate-300">
+            Published website data:{' '}
+            <a
+              href="https://huggingface.co/datasets/CommunityOne/one-jurisdiction-mapping-analysis"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-civic-gold-light underline underline-offset-4 transition hover:text-civic-gold"
+            >
+              Hugging Face dataset
+            </a>
+          </p>
+          <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-3 shadow-2xl shadow-slate-950/30 backdrop-blur-sm">
+            <img
+              src={`${import.meta.env.BASE_URL}images/not_there.png`}
+              alt="CommunityOne web app preview"
+              className="w-full rounded-2xl object-cover"
+            />
+          </div>
         </motion.div>
       </section>
 
@@ -264,30 +275,18 @@ export default function HackathonHome() {
         <h2 className="mt-2 text-center font-display text-3xl font-bold sm:text-4xl">
           CommunityOne turns civic noise into plain-language insight.
         </h2>
-        <div className="mt-14 overflow-x-auto rounded-2xl border border-white/10 bg-civic-navy-light/60 p-6 sm:p-8">
+        <div className="mt-14 overflow-hidden rounded-3xl border border-white/10 bg-civic-navy-light/60 p-3 shadow-2xl shadow-slate-950/30 sm:p-4">
           <motion.div
-            className="flex min-w-[640px] items-stretch justify-between gap-2 sm:min-w-0 sm:gap-4"
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            className="overflow-hidden rounded-2xl bg-slate-950/30 p-2"
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            {PIPELINE_STEPS.map((step, i) => (
-              <div key={step.label} className="flex flex-1 items-center gap-2">
-                <div className="flex flex-1 flex-col rounded-lg border border-civic-gold/30 bg-white/95 p-4 text-civic-navy shadow-md">
-                  <span className="text-xs font-bold uppercase tracking-wider text-civic-gold">
-                    {step.label}
-                  </span>
-                  <ul className="mt-2 space-y-1 text-sm font-medium">
-                    {step.items.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-                {i < PIPELINE_STEPS.length - 1 && (
-                  <ArrowRightIcon className="hidden h-6 w-6 shrink-0 text-civic-gold sm:block" />
-                )}
-              </div>
-            ))}
+            <img
+              src={`${import.meta.env.BASE_URL}images/cites_that_count.png`}
+              alt="CommunityOne pipeline visual showing inputs, Gemma 4 processing, and public dashboard output"
+              className="w-full rounded-xl object-cover"
+            />
           </motion.div>
         </div>
       </Section>

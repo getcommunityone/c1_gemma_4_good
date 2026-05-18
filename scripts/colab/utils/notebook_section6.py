@@ -265,10 +265,6 @@ def ensure_inventories(ns: Dict[str, Any], repo: Optional[Path] = None) -> list[
 
     Syncs judge public corpus first when ``01_raw_inputs`` is empty.
     """
-    existing = ns.get("INVENTORIES")
-    if existing:
-        return existing
-
     try:
         from colab_runtime_phases import hydrate_pipeline_paths
     except ImportError:
@@ -281,11 +277,29 @@ def ensure_inventories(ns: Dict[str, Any], repo: Optional[Path] = None) -> list[
         raise RuntimeError("PIPE missing — re-run §3 Install, then §5 Inventory.")
 
     try:
-        from scripts.utils.gdrive_paths import resolve_governance_raw_inputs_root
+        from scripts.utils.gdrive_paths import publish_governance_raw_inputs_root
     except ImportError:
-        from utils.gdrive_paths import resolve_governance_raw_inputs_root  # type: ignore
+        from utils.gdrive_paths import publish_governance_raw_inputs_root  # type: ignore
 
-    raw_root = Path(resolve_governance_raw_inputs_root(pipe.root))
+    raw_root = Path(publish_governance_raw_inputs_root(pipe.root))
+
+    existing = ns.get("INVENTORIES")
+    if existing:
+        try:
+            from colab_local_raw_mirror import inventories_aligned_with_raw_root
+        except ImportError:
+            from runtime.colab_local_raw_mirror import (  # type: ignore
+                inventories_aligned_with_raw_root,
+            )
+        if inventories_aligned_with_raw_root(existing, raw_root):
+            ns["RAW_ROOT"] = raw_root
+            ns["DRIVE_RAW_ROOT"] = raw_root
+            return existing
+        print(
+            "§6: stale INVENTORIES (nested paths or missing files) — rebuilding from "
+            f"{raw_root}",
+            flush=True,
+        )
 
     try:
         from judge_pipeline_sync import judge_mode_enabled, prepare_judge_pipeline
@@ -315,6 +329,17 @@ def ensure_inventories(ns: Dict[str, Any], repo: Optional[Path] = None) -> list[
 
     all_inv = [inv for inv in walk_raw_inputs(raw_root) if inv.has_media]
     scoped = filter_inventories_for_scope(all_inv, get_active_preset())
+
+    if scoped:
+        try:
+            from colab_local_raw_mirror import mirror_inventories_to_local_raw
+        except ImportError:
+            from runtime.colab_local_raw_mirror import (  # type: ignore
+                mirror_inventories_to_local_raw,
+            )
+
+        scoped, raw_root = mirror_inventories_to_local_raw(scoped, raw_root)
+        publish_governance_raw_inputs_root(raw_root)
 
     ns["DRIVE_RAW_ROOT"] = raw_root
     ns["RAW_ROOT"] = raw_root

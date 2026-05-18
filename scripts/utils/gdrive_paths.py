@@ -349,6 +349,20 @@ def resolve_effective_raw_inputs_root(raw: Path) -> Path:
     return root
 
 
+def publish_governance_raw_inputs_root(
+    raw_or_pipeline: Path | None = None,
+) -> Path:
+    """
+    Resolve the walkable ``01_raw_inputs`` root and pin ``GOVERNANCE_RAW_INPUTS_ROOT``.
+
+    Call after judge sync or when §5/§6 (re)builds inventory so nested gdown layouts
+    (``…/01_raw_inputs/2026_Gemma_4_Good/01_raw_inputs/AL/…``) are not joined twice.
+    """
+    resolved = resolve_governance_raw_inputs_root(raw_or_pipeline)
+    os.environ["GOVERNANCE_RAW_INPUTS_ROOT"] = str(resolved)
+    return resolved
+
+
 def diagnose_raw_inputs_layout(raw: Path) -> str:
     """Human-readable hint when §5 inventory finds zero jurisdictions."""
     root = raw.expanduser().resolve()

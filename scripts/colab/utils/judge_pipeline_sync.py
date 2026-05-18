@@ -242,5 +242,7 @@ def prepare_judge_pipeline(
         print(diagnose_raw_inputs_layout(raw))
     elif not raw_inputs_has_media_files(effective):
         print(diagnose_raw_inputs_layout(raw))
-    os.environ["GOVERNANCE_RAW_INPUTS_ROOT"] = str(effective)
+    from scripts.utils.gdrive_paths import publish_governance_raw_inputs_root
+
+    publish_governance_raw_inputs_root(root)
     return root, effective
