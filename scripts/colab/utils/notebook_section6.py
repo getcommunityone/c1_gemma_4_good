@@ -151,6 +151,46 @@ def load_api_keys_into_ns(ns: Dict[str, Any], repo: Optional[Path] = None) -> bo
     return True
 
 
+def load_colab_confirm_ui(repo: Optional[Path] = None) -> Any:
+    """Import ``colab_confirm_ui`` (ipywidgets checkpoint gates)."""
+    import importlib
+    import importlib.util
+
+    r = repo or _repo_from_ns(_user_ns())
+    if r is not None:
+        _ensure_import_paths(r)
+    try:
+        import colab_confirm_ui
+
+        return colab_confirm_ui
+    except ImportError:
+        pass
+    if r is not None:
+        path = r / "scripts" / "colab" / "utils" / "colab_confirm_ui.py"
+        if path.is_file():
+            spec = importlib.util.spec_from_file_location("colab_confirm_ui", path)
+            mod = importlib.util.module_from_spec(spec)
+            assert spec.loader is not None
+            spec.loader.exec_module(mod)
+            sys.modules["colab_confirm_ui"] = mod
+            return mod
+    try:
+        from scripts.colab.utils import colab_confirm_ui
+
+        return colab_confirm_ui
+    except ImportError as exc:
+        raise ModuleNotFoundError(
+            "colab_confirm_ui.py not found. Re-run §1 (git pull) so "
+            "scripts/colab/utils/colab_confirm_ui.py exists in your checkout."
+        ) from exc
+
+
+def run_phase1_finished_checkpoint(namespace: Optional[Dict[str, Any]] = None) -> None:
+    """§6 Phase 1 checkpoint — dropdown gate before switching to GPU."""
+    repo = _repo_from_ns(_user_ns(namespace))
+    load_colab_confirm_ui(repo).confirm_phase1_finished_checkpoint()
+
+
 def ensure_inventories(ns: Dict[str, Any], repo: Optional[Path] = None) -> list[Any]:
     """
     Build ``INVENTORIES`` when §5 was skipped or the kernel was restarted after §5.
