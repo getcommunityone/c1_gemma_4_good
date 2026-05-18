@@ -146,7 +146,7 @@ export default function MeetingsExplorerPage() {
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700 ring-1 ring-teal-200">
-                          Drilldown
+                          Meeting details
                         </span>
                         <ArrowRightIcon className="h-5 w-5 text-slate-400 transition group-hover:translate-x-1 group-hover:text-teal-600" />
                       </div>

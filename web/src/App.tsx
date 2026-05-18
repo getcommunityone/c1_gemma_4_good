@@ -8,6 +8,7 @@ import DataExplorerLayout from './components/DataExplorerLayout'
 import DataExplorerScorecardPage from './pages/DataExplorerScorecardPage'
 import JurisdictionMappingQualityPage from './pages/JurisdictionMappingQualityPage'
 import MeetingsExplorerPage from './pages/MeetingsExplorerPage'
+import MeetingSummaryPage from './pages/MeetingSummaryPage'
 import { DATA_EXPLORER_MAP_BASE } from './utils/dataExplorerPaths'
 
 function DataExplorerMapDefaultRedirect() {
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="scorecard" element={<DataExplorerScorecardPage />} />
           <Route path="jurisdiction-quality" element={<JurisdictionMappingQualityPage />} />
           <Route path="meetings" element={<MeetingsExplorerPage />} />
+          <Route path="meetings/:meetingId" element={<MeetingSummaryPage />} />
           <Route path="map/us/:vintage/:metric" element={<CensusMapPage />} />
           <Route path="map/state/:stateFips/:vintage/:metric" element={<CensusMapPage />} />
           <Route path="map/place/:stateFips/:vintage/:metric" element={<CensusMapPage />} />

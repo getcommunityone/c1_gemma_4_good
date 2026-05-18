@@ -25,8 +25,6 @@ mindmap
 
 ## Theme & Category classification
 
-Category codes follow the fixed table in `policy_analysis_v1.md` (e.g. **Civil Rights and Equity → Category-01**, **Parks and Recreation → Category-08**). If you see Category-01 on a parks item, the issue is usually **primary_theme**, not the code.
-
 | ID | Topic | Primary theme | Category | Why (model) | Flags |
 |---|---|---|---|---|---|
 | D001 | Approve February 4 minutes | Governance and Administrative Policy | Category-01 | The decision involves the routine administrative approval of meeting minutes. | — |
