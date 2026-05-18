@@ -37,6 +37,35 @@ SECTION6_REQUIRED_NAMES: Sequence[str] = (
     "GATEKEEPER_MAX_FILES",
 )
 
+_SECTION4_NAMES: frozenset[str] = frozenset(
+    {
+        "API_KEY",
+        "GENAI_MODEL",
+        "THINKING_MODEL",
+        "DEMO4_MODEL",
+        "GATEKEEPER_MODEL",
+        "SHIELD_MODEL",
+        "MAX_PDFS_PER_JUR",
+        "MAX_PAGES_PER_PDF",
+        "MAX_AUDIO_PER_JUR",
+        "MAX_AUDIO_CHUNKS",
+        "THINKING_BUDGET",
+        "DRIFT_FOCUS",
+        "GATEKEEPER_MAX_FILES",
+    }
+)
+
+_SECTION5_PATH_NAMES: frozenset[str] = frozenset(
+    {
+        "RAW_ROOT",
+        "PROCESSED_ROOT",
+        "GEMMA_JSON_ROOT",
+        "SUMMARIES_ROOT",
+        "SCRATCH_AUDIO_ROOT",
+        "INVENTORIES",
+    }
+)
+
 
 def colab_two_phase_enabled() -> bool:
     """Notebook §6 runs PDF on CPU, then video on GPU (default on)."""
@@ -239,15 +268,194 @@ def ensure_paths_from_bootstrap(namespace: Optional[Dict[str, Any]] = None) -> N
     ns.setdefault("REPO_PATH", repo_path)
 
 
+def _notebook_globals(namespace: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """IPython user namespace (all prior cells), not a stale dict snapshot."""
+    try:
+        from IPython import get_ipython
+
+        ip = get_ipython()
+        if ip is not None:
+            return ip.user_ns
+    except Exception:
+        pass
+    return namespace if namespace is not None else globals()
+
+
+def hydrate_pipeline_paths(namespace: Optional[Dict[str, Any]] = None) -> None:
+    """Restore §3/§5 path globals when §1 ran but later cells were skipped."""
+    ns = _notebook_globals(namespace)
+    ensure_paths_from_bootstrap(ns)
+    paths = ns.get("PATHS")
+    if paths is None:
+        return
+
+    repo = Path(paths.project_path).resolve()
+    _ensure_repo_on_syspath(repo)
+
+    if "PIPE" not in ns:
+        os.environ.setdefault(
+            "GOVERNANCE_PIPELINE_DATA_ROOT", str(paths.governance_pipeline_data)
+        )
+        from scripts.utils.gdrive_paths import GovernancePipelinePaths
+
+        ns["PIPE"] = GovernancePipelinePaths.resolve()
+
+    pipe = ns["PIPE"]
+    if "POLICY_PROMPT" not in ns:
+        from governance_meeting_llm import load_text_file
+
+        prompt_path = repo / "prompts" / "policy_analysis_v1.md"
+        if not prompt_path.is_file():
+            raise FileNotFoundError(f"Missing policy prompt: {prompt_path}")
+        ns["POLICY_PROMPT"] = load_text_file(prompt_path)
+
+    processed = pipe.root / "03_processed_outputs"
+    ns.setdefault("PROCESSED_ROOT", processed)
+    ns.setdefault("GEMMA_JSON_ROOT", processed / "02_gemma_json")
+    ns.setdefault("SUMMARIES_ROOT", processed / "03_human_summaries")
+    ns.setdefault("SCRATCH_AUDIO_ROOT", processed / "_scratch_audio_chunks")
+    for p in (ns["GEMMA_JSON_ROOT"], ns["SUMMARIES_ROOT"], ns["SCRATCH_AUDIO_ROOT"]):
+        Path(p).mkdir(parents=True, exist_ok=True)
+
+    if "RAW_ROOT" not in ns:
+        from scripts.utils.gdrive_paths import resolve_governance_raw_inputs_root
+
+        ns["RAW_ROOT"] = resolve_governance_raw_inputs_root(pipe.root)
+
+
+def hydrate_api_and_models(namespace: Optional[Dict[str, Any]] = None) -> bool:
+    """
+    Restore §4 API keys and model ids from ``.env`` / ``os.environ`` when §4 did not finish.
+
+    Returns True when ``API_KEY`` is set afterward.
+    """
+    ns = _notebook_globals(namespace)
+    repo: Optional[Path] = None
+    if ns.get("PATHS") is not None:
+        repo = Path(ns["PATHS"].project_path).resolve()
+        _ensure_repo_on_syspath(repo)
+
+    try:
+        from colab_secrets import get_notebook_secret, load_repo_dotenv, sanitize_api_key
+    except ImportError:
+        from utils.colab_secrets import (  # type: ignore
+            get_notebook_secret,
+            load_repo_dotenv,
+            sanitize_api_key,
+        )
+
+    load_repo_dotenv(repo)
+
+    if not ns.get("API_KEY"):
+        gemini = sanitize_api_key(
+            get_notebook_secret("GEMINI_API_KEY", repo=repo)
+            or get_notebook_secret("GOOGLE_API_KEY", repo=repo)
+        )
+        if gemini:
+            ns["API_KEY"] = gemini
+            os.environ["GEMINI_API_KEY"] = gemini
+
+    hf = sanitize_api_key(get_notebook_secret("HF_TOKEN", repo=repo))
+    if hf:
+        ns["HF_TOKEN"] = hf
+        os.environ["HF_TOKEN"] = hf
+
+    if not ns.get("API_KEY"):
+        return False
+
+    ns.setdefault(
+        "GENAI_MODEL",
+        os.environ.get("GOVERNANCE_GENAI_MODEL", "gemma-4-26b-a4b-it").strip(),
+    )
+    ns.setdefault(
+        "THINKING_MODEL",
+        os.environ.get("GOVERNANCE_THINKING_MODEL", "gemma-4-31b-it").strip(),
+    )
+    ns.setdefault(
+        "GATEKEEPER_MODEL",
+        os.environ.get("GOVERNANCE_GATEKEEPER_MODEL", "gemma-4-e2b-it").strip(),
+    )
+    ns.setdefault(
+        "SHIELD_MODEL",
+        (
+            os.environ.get("GOVERNANCE_SHIELD_MODEL", "shieldgemma-9b").strip()
+            or ns["GENAI_MODEL"]
+        ),
+    )
+
+    if "DEMO4_MODEL" not in ns or not str(ns.get("DEMO4_MODEL") or "").strip():
+        try:
+            from gemma_hf_backend import demo4_use_huggingface, resolve_demo4_hf_model
+
+            if demo4_use_huggingface() and colab_two_phase_enabled() and not cuda_available():
+                ns["DEMO4_MODEL"] = resolve_demo4_hf_model()
+            elif demo4_use_huggingface() and cuda_available():
+                from gemma_hf_backend import ensure_demo4_hf_ready
+
+                ns["DEMO4_MODEL"] = ensure_demo4_hf_ready()
+            else:
+                ns["DEMO4_MODEL"] = (
+                    os.environ.get("GOVERNANCE_DEMO4_MODEL", "").strip()
+                    or ns["THINKING_MODEL"]
+                )
+        except Exception:
+            ns["DEMO4_MODEL"] = (
+                os.environ.get("GOVERNANCE_DEMO4_HF_MODEL", "google/gemma-4-E2B-it").strip()
+                or "google/gemma-4-E2B-it"
+            )
+
+    ns.setdefault("MAX_PDFS_PER_JUR", int(os.environ.get("GOVERNANCE_DEMO_MAX_PDFS_PER_JUR", "3")))
+    ns.setdefault(
+        "MAX_PAGES_PER_PDF", int(os.environ.get("GOVERNANCE_DEMO_MAX_PAGES_PER_PDF", "8"))
+    )
+    ns.setdefault(
+        "MAX_AUDIO_PER_JUR", int(os.environ.get("GOVERNANCE_DEMO_MAX_AUDIO_PER_JUR", "1"))
+    )
+    ns.setdefault(
+        "MAX_AUDIO_CHUNKS", int(os.environ.get("GOVERNANCE_DEMO_MAX_AUDIO_CHUNKS", "4"))
+    )
+    ns.setdefault(
+        "THINKING_BUDGET", int(os.environ.get("GOVERNANCE_DEMO_THINKING_BUDGET", "-1"))
+    )
+    if "DRIFT_FOCUS" not in ns:
+        raw = os.environ.get("GOVERNANCE_DRIFT_FOCUS", "").strip()
+        ns["DRIFT_FOCUS"] = raw or None
+    if "GATEKEEPER_MAX_FILES" not in ns:
+        _gate = os.environ.get("GOVERNANCE_GATEKEEPER_MAX_FILES", "").strip()
+        ns["GATEKEEPER_MAX_FILES"] = int(_gate) if _gate else None
+
+    print(
+        "§6 auto-config: restored §4 variables from .env / environment "
+        "(re-run §4 for full model resolution if models look wrong)."
+    )
+    return True
+
+
 def require_section6_prereqs(namespace: Optional[Dict[str, Any]] = None) -> None:
     """Raise with a clear message if §1–§5 cells were not run in this session."""
-    ns = namespace if namespace is not None else globals()
+    ns = _notebook_globals(namespace)
     ensure_paths_from_bootstrap(ns)
+    hydrate_pipeline_paths(ns)
+
     missing = [name for name in SECTION6_REQUIRED_NAMES if name not in ns]
+    if missing and _SECTION4_NAMES.intersection(missing):
+        hydrate_api_and_models(ns)
+        missing = [name for name in SECTION6_REQUIRED_NAMES if name not in ns]
+
     if missing:
+        if "INVENTORIES" in missing or _SECTION5_PATH_NAMES.intersection(missing):
+            hint = (
+                " Re-run **§5 Inventory** (and §3 Install if PIPE / POLICY_PROMPT are missing). "
+                "After Runtime → Restart session: §1 → §3 → §4 → §5 → §6."
+            )
+        elif _SECTION4_NAMES.intersection(missing):
+            hint = (
+                " **§4 did not finish** (often HF_TOKEN / GEMINI Colab Secret timeout). "
+                "Fix keys in Colab Secrets or repo `.env`, then **re-run §4** until you see "
+                "model lines printed — then §6."
+            )
+        else:
+            hint = " Run §1 → §5 in order, then §6."
         raise RuntimeError(
-            "Missing "
-            + ", ".join(missing)
-            + ". Run §1 → §5 in order (§1 sets PATHS; §5 sets INVENTORIES). "
-            "After Runtime → Restart session, re-run §1–§5 before §6."
+            "Missing " + ", ".join(missing) + "." + hint
         )
