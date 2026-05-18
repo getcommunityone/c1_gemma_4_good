@@ -232,6 +232,19 @@ def get_notebook_secret(name: str, *, repo: Optional[PathLike] = None) -> Option
     """
     default_local_secrets_mode()
     load_dotenv_all_candidates(repo=repo)
+    if in_colab_runtime() and not _skip_colab_userdata():
+        try:
+            from google.colab import userdata
+
+            val = userdata.get(name)
+            val = (val or "").strip()
+            if val:
+                return val
+        except Exception as exc:
+            print(
+                f"   ⚠ Colab secret {name!r} unavailable ({type(exc).__name__}: {exc}). "
+                f"Falling back to env / .env."
+            )
     env_val = (os.environ.get(name) or "").strip()
     if env_val:
         return env_val
