@@ -7,7 +7,35 @@ Used by ``run_in_colab.ipynb`` §6 — not required for local runs.
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, Optional
+import sys
+from pathlib import Path
+from typing import Any, Dict, Optional, Sequence
+
+# Notebook globals expected after §1–§5 (§5 may set ``_demo_date_cap`` separately).
+SECTION6_REQUIRED_NAMES: Sequence[str] = (
+    "PATHS",
+    "PIPE",
+    "API_KEY",
+    "POLICY_PROMPT",
+    "INVENTORIES",
+    "RAW_ROOT",
+    "PROCESSED_ROOT",
+    "GEMMA_JSON_ROOT",
+    "SUMMARIES_ROOT",
+    "SCRATCH_AUDIO_ROOT",
+    "GENAI_MODEL",
+    "THINKING_MODEL",
+    "DEMO4_MODEL",
+    "GATEKEEPER_MODEL",
+    "SHIELD_MODEL",
+    "MAX_PDFS_PER_JUR",
+    "MAX_PAGES_PER_PDF",
+    "MAX_AUDIO_PER_JUR",
+    "MAX_AUDIO_CHUNKS",
+    "THINKING_BUDGET",
+    "DRIFT_FOCUS",
+    "GATEKEEPER_MAX_FILES",
+)
 
 
 def colab_two_phase_enabled() -> bool:
@@ -133,3 +161,71 @@ def print_after_video_cpu_recommendation() -> None:
         "3. Open outputs on Drive under `03_processed_outputs/` and `03_human_summaries/`\n"
         "   (`GOVERNANCE_FORCE_REPROCESS=0` reuses work if you re-run later)\n"
     )
+
+
+def _ensure_repo_on_syspath(repo_path: Path) -> None:
+    root = repo_path.resolve()
+    for entry in (
+        str(root),
+        str(root / "scripts" / "colab"),
+        str(root / "scripts" / "colab" / "utils"),
+    ):
+        if entry not in sys.path:
+            sys.path.insert(0, entry)
+
+
+def resolve_colab_package_dir(namespace: Optional[Dict[str, Any]] = None) -> Path:
+    """``scripts/colab`` directory for imports (works before ``PATHS`` exists)."""
+    ns = namespace if namespace is not None else globals()
+    if "PATHS" in ns:
+        return Path(ns["PATHS"].project_path) / "scripts" / "colab"
+    if "REPO_PATH" in ns:
+        return Path(ns["REPO_PATH"]).resolve() / "scripts" / "colab"
+    env = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
+    if env:
+        cand = Path(env).expanduser().resolve() / "scripts" / "colab"
+        if (cand / "colab_runtime_phases.py").is_file():
+            return cand
+    for folder in (Path("/content/c1_gemma_4_good"), Path.cwd(), *Path.cwd().parents):
+        cand = folder / "scripts" / "colab"
+        if (cand / "colab_runtime_phases.py").is_file():
+            return cand.resolve()
+    raise RuntimeError(
+        "Cannot find scripts/colab. Run **§1 Bootstrap**, then §2–§5, before §6."
+    )
+
+
+def ensure_paths_from_bootstrap(namespace: Optional[Dict[str, Any]] = None) -> None:
+    """Restore ``PATHS`` when ``REPO_PATH`` exists but §1 globals were cleared."""
+    ns = namespace if namespace is not None else globals()
+    if "PATHS" in ns:
+        return
+    repo = ns.get("REPO_PATH")
+    if repo is None:
+        env = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
+        if env:
+            repo = Path(env).expanduser()
+    if repo is None:
+        return
+    repo_path = Path(repo).resolve()
+    os.environ.setdefault("OPEN_NAVIGATOR_ROOT", str(repo_path))
+    _ensure_repo_on_syspath(repo_path)
+    from scripts.colab.utils.colab_paths import maybe_mount_google_drive, setup_notebook_paths
+
+    maybe_mount_google_drive()
+    ns["PATHS"] = setup_notebook_paths()
+    ns.setdefault("REPO_PATH", repo_path)
+
+
+def require_section6_prereqs(namespace: Optional[Dict[str, Any]] = None) -> None:
+    """Raise with a clear message if §1–§5 cells were not run in this session."""
+    ns = namespace if namespace is not None else globals()
+    ensure_paths_from_bootstrap(ns)
+    missing = [name for name in SECTION6_REQUIRED_NAMES if name not in ns]
+    if missing:
+        raise RuntimeError(
+            "Missing "
+            + ", ".join(missing)
+            + ". Run §1 → §5 in order (§1 sets PATHS; §5 sets INVENTORIES). "
+            "After Runtime → Restart session, re-run §1–§5 before §6."
+        )
