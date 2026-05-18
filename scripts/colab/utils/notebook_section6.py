@@ -6,10 +6,14 @@ Call ``prepare_section6_phase1()`` at the start of the §6 Phase 1 cell (after �
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
+
+SECTION6_RUNTIME_MARKER = Path("scripts/colab/runtime/colab_runtime_phases.py")
 
 
 def _user_ns(namespace: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -53,6 +57,71 @@ def _repo_from_ns(ns: Dict[str, Any]) -> Optional[Path]:
         if (folder / marker).is_file():
             return folder.resolve()
     return None
+
+
+def resolve_section6_repo(namespace: Optional[Dict[str, Any]] = None) -> Path:
+    """Locate repo root for §6 imports (raises if ``colab_runtime_phases.py`` missing)."""
+    ns = _user_ns(namespace)
+    marker = SECTION6_RUNTIME_MARKER
+    for folder in (Path.cwd(), *Path.cwd().parents):
+        if (folder / marker).is_file():
+            return folder.resolve()
+    env = os.environ.get("OPEN_NAVIGATOR_ROOT", "").strip()
+    if env and (Path(env).expanduser() / marker).is_file():
+        return Path(env).expanduser().resolve()
+    if ns.get("REPO_PATH") is not None and (Path(ns["REPO_PATH"]) / marker).is_file():
+        return Path(ns["REPO_PATH"]).resolve()
+    if ns.get("PATHS") is not None and (Path(ns["PATHS"].project_path) / marker).is_file():
+        return Path(ns["PATHS"].project_path).resolve()
+    for folder in (Path("/content/c1_gemma_4_good"),):
+        if (folder / marker).is_file():
+            return folder.resolve()
+    content = Path("/content")
+    if content.is_dir():
+        for py in sorted(content.glob("*/scripts/colab/runtime/colab_runtime_phases.py")):
+            return py.parents[3].resolve()
+    raise ModuleNotFoundError(
+        f"Cannot find {marker} — re-run §0 → §1 (git clone), or set "
+        "OPEN_NAVIGATOR_ROOT to your c1_gemma_4_good checkout."
+    )
+
+
+def import_colab_runtime_phases(repo: Optional[Path] = None) -> Any:
+    """Import ``colab_runtime_phases`` (adds ``scripts/colab/runtime`` to ``sys.path``)."""
+    root = (repo or resolve_section6_repo()).resolve()
+    _ensure_import_paths(root)
+    try:
+        import colab_runtime_phases as mod
+
+        return mod
+    except ModuleNotFoundError:
+        path = root / SECTION6_RUNTIME_MARKER
+        if not path.is_file():
+            raise
+        spec = importlib.util.spec_from_file_location("colab_runtime_phases", path)
+        mod = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(mod)
+        sys.modules["colab_runtime_phases"] = mod
+        return mod
+
+
+def bootstrap_section6_runtime(
+    namespace: Optional[Dict[str, Any]] = None,
+) -> Tuple[Path, Any, Any]:
+    """
+    Resolve repo, import ``colab_runtime_phases`` + reload ``notebook_section6``.
+
+    Returns ``(repo_path, colab_runtime_phases_module, notebook_section6_module)``.
+    """
+    repo = resolve_section6_repo(namespace)
+    _ensure_import_paths(repo)
+    crp = import_colab_runtime_phases(repo)
+    import notebook_section6 as nb6
+
+    importlib.reload(crp)
+    importlib.reload(nb6)
+    return repo, crp, nb6
 
 
 def load_api_keys_into_ns(ns: Dict[str, Any], repo: Optional[Path] = None) -> bool:

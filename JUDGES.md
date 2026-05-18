@@ -12,11 +12,14 @@ Static React app. Search every U.S. local-government website, browse ACS census 
 
 [**▶ Open `run_in_colab.ipynb` in Google Colab**](https://colab.research.google.com/github/getcommunityone/c1_gemma_4_good/blob/main/scripts/colab/run_in_colab.ipynb)
 
-1. Add `GEMINI_API_KEY` to **Colab Secrets** (free key from <https://aistudio.google.com>).
-2. Run **§0** (judge mode — public folder URL is pre-filled), then **§1 Bootstrap**.
-3. §1 **downloads** the public demo corpus to `/content/governance_pipeline_local` (no personal Google Drive).
-4. Continue **§2 → §6**. CPU for Phase 1; L4 GPU for Phase 2 audio.
-5. Outputs land in `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…` under that local root.
+1. Add `GEMINI_API_KEY` (and `HF_TOKEN` for video) to **Colab Secrets** (free key from <https://aistudio.google.com>).
+2. Set runtime to **L4 GPU** (or T4) and keep it for the whole run.
+3. Run **§0** (judge mode — public folder URL is pre-filled), then **§1 Bootstrap**.
+4. §1 **downloads** the public demo corpus to `/content/governance_pipeline_local` (no personal Google Drive).
+5. Continue **§2 → §5**, then run **§6 Judge — all-in-one (GPU)** only (skip CPU / checkpoint / two-phase cells).
+6. Outputs land in `03_processed_outputs/02_gemma_json/<STATE>/<scope>/<jurisdiction>/…` under that local root.
+
+If you change runtime or restart the kernel, re-run **§0 → §1 → §5** and the all-in-one cell (not the checkpoint cell).
 
 §0 sets (you do not need to paste this if you ran the §0 cell):
 

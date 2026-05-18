@@ -156,8 +156,8 @@ export default function HackathonHome() {
           </nav>
           <div className="flex shrink-0 items-center gap-2">
             <Link
-              to="/search"
-              className="hidden rounded-lg border border-white/20 px-3 py-2 text-sm font-medium text-white hover:border-civic-gold sm:inline-block"
+              to="/data-explorer/"
+              className="hidden rounded-lg bg-civic-gold px-3 py-2 text-sm font-semibold text-civic-navy hover:bg-civic-gold-light sm:inline-block"
             >
               Web demo
             </Link>
@@ -201,7 +201,7 @@ export default function HackathonHome() {
             transition={{ delay: 0.35 }}
           >
             <Link
-              to="/data-explorer/meetings"
+              to="/data-explorer/"
               className="inline-flex items-center gap-2 rounded-xl bg-civic-gold px-8 py-3.5 text-base font-semibold text-civic-navy shadow-lg shadow-amber-900/30 transition hover:bg-civic-gold-light"
             >
               Try web demo
@@ -444,7 +444,7 @@ export default function HackathonHome() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              to="/search"
+              to="/data-explorer/"
               className="inline-flex items-center gap-2 rounded-xl bg-civic-gold px-8 py-3.5 font-semibold text-civic-navy hover:bg-civic-gold-light"
             >
               Try web demo

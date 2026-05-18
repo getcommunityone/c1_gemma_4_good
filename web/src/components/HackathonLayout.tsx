@@ -1,23 +1,15 @@
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useState } from 'react'
-import { HomeIcon, MagnifyingGlassIcon, MapIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { HomeIcon, MapIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 const nav = [
   { name: 'Home', href: '/', icon: HomeIcon, exact: true },
-  { name: 'Search', href: '/search', icon: MagnifyingGlassIcon },
   { name: 'Data explorer', href: '/data-explorer', icon: MapIcon },
 ]
 
 export default function HackathonLayout() {
   const { pathname } = useLocation()
-  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [q, setQ] = useState('')
-
-  const onSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`)
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-200">
@@ -26,15 +18,7 @@ export default function HackathonLayout() {
           <Link to="/" className="shrink-0 text-lg font-bold text-primary-600">
             Gemma 4 Good
           </Link>
-          <form onSubmit={onSearch} className="hidden flex-1 sm:block">
-            <input
-              type="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search jurisdictions, meetings, policy topics…"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </form>
+          <div className="flex-1" />
           <button
             type="button"
             className="ml-auto rounded-lg p-2 text-slate-600 hover:bg-slate-100 sm:hidden"

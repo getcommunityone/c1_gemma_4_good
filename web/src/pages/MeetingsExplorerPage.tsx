@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { dataUrl } from '../lib/dataUrl'
 import { MeetingDetail } from '../components/MeetingDetail'
@@ -11,7 +11,7 @@ interface GemmaMeetingRow {
   summary_path: string | null
   policy_json_path: string | null
   notes?: string
-  theme?: string
+  categories?: string[]
 }
 
 interface GemmaDemoIndex {
@@ -19,25 +19,9 @@ interface GemmaDemoIndex {
   meetings: GemmaMeetingRow[]
 }
 
-const THEMES = [
-  { id: 'governance', label: 'Governance & Admin', color: 'bg-blue-100 text-blue-800' },
-  { id: 'infrastructure', label: 'Infrastructure & Capital', color: 'bg-amber-100 text-amber-800' },
-  { id: 'education', label: 'Education & Workforce', color: 'bg-green-100 text-green-800' },
-]
-
-const TRENDING_TOPICS = [
-  'Budget & Finance',
-  'Infrastructure',
-  'Public Safety',
-  'Education',
-  'Planning & Zoning',
-  'Health & Services',
-]
-
 export default function MeetingsExplorerPage() {
-  const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [selectedMeeting, setSelectedMeeting] = useState<GemmaMeetingRow | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [activeCategory, setActiveCategory] = useState<string>('all')
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['gemma-demo-index'],
@@ -48,115 +32,77 @@ export default function MeetingsExplorerPage() {
     },
   })
 
-  const filteredMeetings = (data?.meetings || []).filter((m) => {
-    // Apply theme filter
-    if (selectedTheme) {
-      const themeMap: Record<string, string> = {
-        governance: 'Governance',
-        infrastructure: 'Infrastructure',
-        education: 'Education',
-      }
-      if (!m.jurisdiction_label?.includes(themeMap[selectedTheme]) && !m.notes?.includes(themeMap[selectedTheme])) {
-        return false
-      }
-    }
+  const meetings = data?.meetings || []
 
-    // Apply search filter
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      return (
-        m.jurisdiction_label?.toLowerCase().includes(q) ||
-        m.meeting_date?.includes(q) ||
-        m.notes?.toLowerCase().includes(q)
-      )
-    }
+  const categoryPills = useMemo(() => {
+    const counts = new Map<string, number>()
+    meetings.forEach((m) => {
+      ;(m.categories || []).forEach((category) => {
+        const key = category.trim()
+        if (!key) return
+        counts.set(key, (counts.get(key) || 0) + 1)
+      })
+    })
 
-    return true
-  })
+    const categories = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([label, count]) => ({ id: label, label, count }))
+
+    return [{ id: 'all', label: 'All', count: meetings.length }, ...categories]
+  }, [meetings])
+
+  const visibleMeetings =
+    activeCategory === 'all'
+      ? meetings
+      : meetings.filter((m) => (m.categories || []).includes(activeCategory))
 
   return (
     <div className="space-y-6">
-      {/* Trending Topics */}
-      <div className="rounded-lg bg-gradient-to-r from-teal-50 to-blue-50 p-4 shadow-sm border border-teal-100">
-        <h3 className="text-sm font-semibold text-slate-900 mb-3">🔥 Trending Topics</h3>
-        <div className="flex flex-wrap gap-2">
-          {TRENDING_TOPICS.map((topic) => (
-            <button
-              key={topic}
-              className="px-3 py-1 rounded-full text-xs font-medium bg-white border border-teal-200 text-teal-700 hover:bg-teal-50 transition"
-              onClick={() => setSearchQuery(topic.toLowerCase())}
-            >
-              {topic}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Theme Filters */}
-      <div className="rounded-lg bg-white p-4 shadow-sm">
-        <h3 className="text-sm font-semibold text-slate-900 mb-3">Filter by Theme</h3>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedTheme(null)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              selectedTheme === null
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-            }`}
-          >
-            All
-          </button>
-          {THEMES.map((theme) => (
-            <button
-              key={theme.id}
-              onClick={() => setSelectedTheme(theme.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                selectedTheme === theme.id
-                  ? theme.color
-                  : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-              }`}
-            >
-              {theme.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="rounded-lg bg-white p-4 shadow-sm">
-        <input
-          type="text"
-          placeholder="Search meetings by jurisdiction or date…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-        />
-      </div>
-
       {/* Meetings List */}
       <div className="rounded-lg bg-white shadow-sm">
         <div className="p-4 border-b border-slate-200">
           <h2 className="text-lg font-semibold text-slate-900">
-            Meeting Minutes {filteredMeetings.length > 0 && `(${filteredMeetings.length})`}
+            Meeting Minutes {meetings.length > 0 && `(${meetings.length})`}
           </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Static index from the pipeline. Rebuild with{' '}
-            <code className="text-xs">python scripts/colab/export/export_web_demo_index.py</code> after §6.
-          </p>
         </div>
 
         {isLoading && <p className="p-4 text-slate-500">Loading…</p>}
         {isError && <p className="p-4 text-red-700">Missing gemma-demo/index.json</p>}
 
-        {data && filteredMeetings.length === 0 && (
-          <p className="p-4 text-slate-500">No meetings found. Try adjusting your filters.</p>
+        {data && meetings.length === 0 && (
+          <p className="p-4 text-slate-500">No meetings found.</p>
         )}
 
-        {filteredMeetings.length > 0 && (
+        {meetings.length > 0 && (
           <>
+            <div className="px-4 pt-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Trending Categories
+                </span>
+                {categoryPills.map((pill) => {
+                  const active = activeCategory === pill.id
+                  return (
+                    <button
+                      key={pill.id}
+                      type="button"
+                      onClick={() => setActiveCategory(pill.id)}
+                      className={
+                        active
+                          ? 'rounded-full bg-teal-600 px-3 py-1 text-xs font-semibold text-white ring-1 ring-teal-600'
+                          : 'rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-200'
+                      }
+                    >
+                      {pill.label} ({pill.count})
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
             <p className="px-4 pt-2 text-xs text-slate-500">Generated {data?.generated_at}</p>
             <ul className="divide-y divide-slate-200">
-              {filteredMeetings.map((m) => (
+              {visibleMeetings.map((m) => (
                 <li key={`${m.jurisdiction_root}-${m.meeting_date}`} className="p-4 hover:bg-slate-50 transition">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -164,6 +110,18 @@ export default function MeetingsExplorerPage() {
                       <p className="text-sm text-slate-600">
                         {m.meeting_date} · {m.jurisdiction_root}
                       </p>
+                      {m.categories && m.categories.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {m.categories.map((category) => (
+                            <span
+                              key={`${m.jurisdiction_root}-${m.meeting_date}-${category}`}
+                              className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+                            >
+                              {category}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       {m.notes && <p className="mt-1 text-sm text-amber-800">{m.notes}</p>}
                     </div>
                     <div className="ml-4 flex flex-wrap gap-2 justify-end">
@@ -190,6 +148,9 @@ export default function MeetingsExplorerPage() {
                 </li>
               ))}
             </ul>
+            {visibleMeetings.length === 0 && (
+              <p className="p-4 text-sm text-slate-500">No meetings match this category.</p>
+            )}
           </>
         )}
       </div>

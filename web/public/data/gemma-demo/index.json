@@ -1,4 +1,19 @@
 {
   "generated_at": "2026-05-18",
-  "meetings": []
+  "meetings": [
+    {
+      "jurisdiction_label": "Tuscaloosa County Commission",
+      "jurisdiction_root": "AL/county/county_01125",
+      "meeting_date": "2026-02-18",
+      "calendar_year": "2026",
+      "summary_path": "/c1_gemma_4_good/data/gemma-demo/2026_02_18_Tuscaloosa_County_meeting_summary.md",
+      "policy_json_path": null,
+      "notes": null,
+      "categories": [
+        "Governance",
+        "Infrastructure",
+        "Education"
+      ]
+    }
+  ]
 }

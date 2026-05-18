@@ -96,8 +96,22 @@ def runtime_label() -> str:
     return "CPU"
 
 
+def _single_runtime_mode() -> bool:
+    return os.environ.get("GOVERNANCE_COLAB_SINGLE_RUNTIME", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+
 def ensure_cpu_runtime(*, phase: str = "PDFs, gatekeeper, Demo 3") -> None:
     """Raise if Colab is on a GPU runtime (phase 1 should use CPU)."""
+    if _single_runtime_mode():
+        print(
+            f"✓ Single-runtime mode — Phase 1 may run on {runtime_label()} "
+            "(set GOVERNANCE_COLAB_SINGLE_RUNTIME=0 for classic CPU→GPU flow)."
+        )
+        return
     if cuda_available():
         raise RuntimeError(
             f"\n{'=' * 60}\n"
