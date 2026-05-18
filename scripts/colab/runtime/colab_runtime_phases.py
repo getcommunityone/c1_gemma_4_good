@@ -68,8 +68,14 @@ _SECTION5_PATH_NAMES: frozenset[str] = frozenset(
 
 
 def colab_two_phase_enabled() -> bool:
-    """Notebook §6 runs PDF on CPU, then video on GPU (default on)."""
-    return os.environ.get("GOVERNANCE_COLAB_TWO_PHASE", "1").strip().lower() not in (
+    """Legacy CPU→GPU split; disabled when ``GOVERNANCE_COLAB_SINGLE_RUNTIME=1`` (default for judges)."""
+    if os.environ.get("GOVERNANCE_COLAB_SINGLE_RUNTIME", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    ):
+        return False
+    return os.environ.get("GOVERNANCE_COLAB_TWO_PHASE", "0").strip().lower() not in (
         "0",
         "false",
         "no",
