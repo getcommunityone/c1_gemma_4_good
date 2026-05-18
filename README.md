@@ -6,6 +6,7 @@
 **Submission:** [SUBMISSION.md](SUBMISSION.md) · [Pitch deck](PITCH_DECK.md) · [3-min video](VIDEO_SCRIPT.md)
 **Reference:** [Architecture](ARCHITECTURE.md) · [Rules compliance](RULES_CHECKLIST.md)
 **Live demos:** [Judges quickstart](JUDGES.md) · [Colab notebook](#b-reproducible-pipeline) · [Web UI](https://getcommunityone.github.io/c1_gemma_4_good/)
+**Website video:** [CommunityOne Submission Web MP4](web/public/video/CommunityOne_%20Submission_Web.mp4)
 
 ---
 
@@ -155,3 +156,12 @@ Our kids are on track for a worse financial future than we had — not because t
 CommunityOne replaces emotion with evidence. It maps a better path. And it does it for free, for every jurisdiction, in every language people actually speak.
 
 **You and I — defying gravity.**
+
+---
+
+## Website Image Assets
+
+- [cites_that_count.png](web/public/images/cites_that_count.png)
+- [cover_image.png](web/public/images/cover_image.png)
+- [not_there.png](web/public/images/not_there.png)
+- [CommunityOne_ Submission_Web.mp4](web/public/video/CommunityOne_%20Submission_Web.mp4)

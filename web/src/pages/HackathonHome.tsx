@@ -225,10 +225,16 @@ export default function HackathonHome() {
             </a>
           </p>
           <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-3 shadow-2xl shadow-slate-950/30 backdrop-blur-sm">
-            <img
-              src={`${import.meta.env.BASE_URL}images/not_there.png`}
-              alt="CommunityOne web app preview"
+            <video
+              src={`${import.meta.env.BASE_URL}video/CommunityOne_%20Submission_Web.mp4`}
               className="w-full rounded-2xl object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls
+              preload="metadata"
+              aria-label="CommunityOne demo video"
             />
           </div>
         </motion.div>
